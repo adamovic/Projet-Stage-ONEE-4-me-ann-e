@@ -1,0 +1,1334 @@
+import os
+
+html_path = r"c:\Users\PROBOOK2\Documents\2026-07-11\rapport_stage.html"
+
+html_head = """<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rapport de Stage de Fin d'Année – 4ème Année Ingénieur</title>
+  <style>
+    :root {
+      --primary: #003366;
+      --primary-light: #1e40af;
+      --accent: #c8102e;
+      --teal: #00695c;
+      --bg-gray: #f8fafc;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 11pt;
+      color: var(--text);
+      background: #e2e8f0;
+      line-height: 1.45;
+    }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      margin: 8mm auto;
+      background: white;
+      padding: 16mm 20mm 15mm 25mm;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    @media print {
+      body { background: white; }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+        page-break-inside: avoid;
+        height: 297mm;
+        width: 210mm;
+        padding: 16mm 20mm 15mm 25mm;
+      }
+      .no-print { display: none; }
+    }
+    
+    /* Header / Footer */
+    .page-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5mm;
+      margin-bottom: 3.5mm;
+      border-bottom: 1.5px solid #003366;
+      font-size: 8.5pt;
+      color: #475569;
+      font-family: Arial, sans-serif;
+    }
+    .page-header-line strong { color: var(--primary); }
+    .page-content { flex: 1; display: flex; flex-direction: column; }
+    .page-footer-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5mm;
+      margin-top: 2.5mm;
+      border-top: 1px solid #cbd5e1;
+      font-size: 8.5pt;
+      color: #64748b;
+      font-family: Arial, sans-serif;
+    }
+    .page-num { font-weight: bold; color: var(--primary); }
+
+    /* COVER PAGE */
+    .cover-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    .cover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2.5px solid var(--primary);
+      padding-bottom: 4mm;
+    }
+    .cover-school { font-size: 9.5pt; font-weight: bold; color: var(--primary); line-height: 1.3; text-align: left; }
+    .cover-school-sub { font-size: 8pt; color: #475569; font-weight: normal; }
+    .cover-body { margin: 3mm 0; }
+    .cover-badge {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: bold;
+      font-size: 9.5pt;
+      padding: 1.5mm 5mm;
+      border-radius: 4px;
+      border: 1px solid #7dd3fc;
+      margin-bottom: 3.5mm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cover-title-box {
+      border: 2px solid var(--primary);
+      background: #f0f4fa;
+      border-radius: 6px;
+      padding: 4mm 5mm;
+      margin: 2mm 0 4mm 0;
+    }
+    .cover-title { font-size: 15pt; font-weight: bold; color: var(--primary); line-height: 1.3; }
+    .cover-subtitle { font-size: 10pt; color: #334155; margin-top: 2mm; font-style: italic; }
+    .cover-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3mm;
+      font-size: 9pt;
+      text-align: left;
+    }
+    .cover-info-table td { padding: 1.8mm 2.5mm; border-bottom: 1px dashed #cbd5e1; }
+    .cover-info-table td.label { font-weight: bold; color: var(--primary); width: 44%; }
+    .cover-footer { font-size: 8.5pt; color: #64748b; font-style: italic; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 2mm; }
+
+    /* TYPOGRAPHY */
+    h1.chapter-title {
+      font-family: Arial, sans-serif;
+      font-size: 13.5pt;
+      font-weight: bold;
+      color: white;
+      background: var(--primary);
+      padding: 2.5mm 4.5mm;
+      margin-bottom: 3.5mm;
+      border-radius: 4px;
+      border-left: 5px solid var(--accent);
+    }
+    h2 {
+      font-family: Arial, sans-serif;
+      font-size: 11pt;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 3mm 0 1.5mm 0;
+      padding-bottom: 0.8mm;
+      border-bottom: 1.5px solid var(--primary);
+    }
+    h3 {
+      font-family: Arial, sans-serif;
+      font-size: 10pt;
+      font-weight: bold;
+      color: #0f4c81;
+      margin: 2.5mm 0 1mm 0;
+    }
+    p { margin-bottom: 2mm; text-align: justify; line-height: 1.45; }
+    ul, ol { margin: 1mm 0 2mm 5mm; line-height: 1.4; }
+    li { margin-bottom: 0.8mm; }
+
+    /* BOXES */
+    .intro-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 2.5mm 3.5mm;
+      margin: 2mm 0 3mm 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 9.5pt;
+    }
+    .intro-box strong { color: var(--primary); font-family: Arial, sans-serif; display: block; margin-bottom: 0.8mm; font-size: 10pt; text-transform: uppercase; }
+    
+    .conclusion-box {
+      background: #fff5f5;
+      border-left: 4px solid var(--accent);
+      padding: 2.5mm 3.5mm;
+      margin: 3mm 0 2mm 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 9.5pt;
+    }
+    .conclusion-box strong { color: var(--accent); font-family: Arial, sans-serif; display: block; margin-bottom: 0.8mm; font-size: 10pt; text-transform: uppercase; }
+
+    /* TABLES */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2mm 0 3mm 0;
+      font-size: 8.5pt;
+      font-family: Arial, sans-serif;
+    }
+    table.data-table th {
+      background: var(--primary);
+      color: white;
+      padding: 1.8mm 2mm;
+      text-align: left;
+      font-size: 8.5pt;
+      font-weight: bold;
+    }
+    table.data-table td {
+      padding: 1.5mm 2mm;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    table.data-table tr:nth-child(even) { background: #f8fafc; }
+    .table-caption {
+      font-family: Arial, sans-serif;
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: var(--primary);
+      margin-top: 2mm;
+      margin-bottom: 0.8mm;
+    }
+
+    /* FIGURES */
+    .figure-box {
+      text-align: center;
+      margin: 2.5mm 0;
+    }
+    .figure-box img {
+      max-width: 100%;
+      max-height: 160mm;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+    .figure-caption {
+      font-family: Arial, sans-serif;
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: var(--primary);
+      margin-top: 1.2mm;
+    }
+
+    /* TOC STYLING */
+    .toc-table { width: 100%; font-family: Arial, sans-serif; font-size: 9pt; border-collapse: collapse; }
+    .toc-table td { padding: 1mm 0; vertical-align: bottom; }
+    .toc-ch { font-weight: bold; color: var(--primary); padding-top: 1.5mm !important; font-size: 9.5pt; }
+    .toc-sec { padding-left: 4mm; }
+    .toc-subsec { padding-left: 8mm; color: #475569; font-size: 8.5pt; }
+    .toc-dots { border-bottom: 1px dotted #94a3b8; width: 100%; display: inline-block; }
+    .toc-pg { font-weight: bold; text-align: right; width: 8mm; color: var(--text); }
+
+    /* PRINT BUTTON */
+    .print-btn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 9999;
+    }
+    .print-btn:hover { background: #002244; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimer le Rapport PDF (44 pages)</button>
+"""
+
+pages = []
+
+def make_page(content, header_right, page_num_str):
+    return f"""<div class="page">
+  <div class="page-header-line">
+    <span>Rapport de Stage de Fin d'Année — 4<sup>ème</sup> Année EMSI</span>
+    <strong>{header_right}</strong>
+  </div>
+  <div class="page-content">
+{content}
+  </div>
+  <div class="page-footer-line">
+    <span>Adam EL MERABET — EMSI / ONEE</span>
+    <span class="page-num">{page_num_str}</span>
+  </div>
+</div>"""
+
+# --- PRELIMINARY PAGES (i to ix) ---
+
+# P1: COVER
+pages.append("""<div class="page">
+  <div class="cover-container">
+    <div class="cover-header">
+      <div class="cover-school">
+        ÉCOLE MAROCAINE DES SCIENCES DE L'INGÉNIEUR<br/>
+        <span class="cover-school-sub">EMSI Casablanca — Membre de Honoris United Universities</span><br/>
+        <span class="cover-school-sub">Filière : Intelligence Artificielle & Data</span>
+      </div>
+      <div style="font-size:12pt; font-weight:bold; color:var(--primary); font-family:Arial;">EMSI / ONEE</div>
+    </div>
+    
+    <div class="cover-body">
+      <div style="font-size:11pt; font-weight:bold; color:var(--primary); margin-bottom:2mm;">OFFICE NATIONAL DE L'ÉLECTRICITÉ ET DE L'EAU POTABLE</div>
+      <div style="font-size:9.5pt; color:#475569; margin-bottom:3mm;">Branche Électricité — Direction des Systèmes d'Information (DSI)</div>
+      
+      <div class="cover-badge">RAPPORT DE STAGE DE FIN D'ANNÉE — 4<sup>ÈME</sup> ANNÉE</div>
+      <div style="font-size:10pt; color:#334155; margin-bottom:2mm;">Pour l'obtention du passage au Cycle Supérieur d'Ingénieur d'État</div>
+      
+      <div class="cover-title-box">
+        <div class="cover-title">GESTION DES RESSOURCES PARTAGÉES (SALA)</div>
+        <div class="cover-subtitle">Développement d'une plateforme web intelligente de gestion centralisée : réservation des salles de réunion et gestion du parc automobile</div>
+      </div>
+      
+      <table class="cover-info-table">
+        <tr><td class="label">Réalisé par :</td><td><strong>Adam EL MERABET</strong></td></tr>
+        <tr><td class="label">Filière & Année :</td><td>4<sup>ème</sup> Année Ingénierie Intelligence Artificielle & Data</td></tr>
+        <tr><td class="label">Encadrant Professionnel (ONEE) :</td><td>M. Mouaad EL MASLOUHI (DSI / ONEE)</td></tr>
+        <tr><td class="label">Encadrant Académique (EMSI) :</td><td>M. Zakaria KHATAR (EMSI Casablanca)</td></tr>
+        <tr><td class="label">Organisme d'Accueil :</td><td>Office National de l'Électricité et de l'Eau Potable (ONEE)</td></tr>
+        <tr><td class="label">Période du Stage :</td><td>Du 01 Juillet 2026 au 31 Août 2026</td></tr>
+        <tr><td class="label">Année Universitaire :</td><td>2025 / 2026</td></tr>
+      </table>
+    </div>
+    
+    <div class="cover-footer">
+      École Marocaine des Sciences de l'Ingénieur — Site Casablanca — Année Académique 2025/2026
+    </div>
+  </div>
+</div>""")
+
+# P2: DEDICACE
+pages.append(make_page("""
+    <h1 class="chapter-title">Dédicace</h1>
+    <div style="margin-top:20mm; text-align:center; font-style:italic; font-size:11pt; line-height:2.2; color:#334155;">
+      <p>À mes chers parents, dont le soutien indéfectible, la patience et les encouragements constants ont été le socle sur lequel j'ai pu construire chacune de mes réussites académiques. Vous avez su, par vos sacrifices silencieux, me donner les moyens d'aller au bout de mes ambitions.</p>
+      <br/>
+      <p>À mes frères et sœurs, pour leur présence rassurante et leurs mots justes dans les moments de doute.</p>
+      <br/>
+      <p>À mes professeurs de l'EMSI Casablanca, qui ont façonné ma pensée d'ingénieur et m'ont transmis bien plus que des connaissances techniques : une rigueur et une exigence que je m'efforcerai de porter tout au long de ma carrière.</p>
+      <br/>
+      <p>À toute l'équipe de l'ONEE qui m'a accueilli avec bienveillance et professionalisme durant ces deux mois, et qui a fait de ce stage une expérience humaine autant que technique.</p>
+      <br/>
+      <p>Je dédie ce modeste travail, fruit de deux mois d'apprentissage intense, à toutes les personnes qui croient en la valeur du travail bien fait.</p>
+    </div>
+""", "Dédicace", "ii"))
+
+# P3: REMERCIEMENTS
+pages.append(make_page("""
+    <h1 class="chapter-title">Remerciements</h1>
+    <div style="font-size:10.5pt; line-height:1.75; text-align:justify; margin-top:4mm;">
+      <p>Au terme de ce stage de fin d'année de 4ème année, il m'est agréable d'acquitter une dette de reconnaissance auprès de toutes les personnes dont l'intervention a favorisé son aboutissement.</p>
+      <p>Je tiens tout d'abord à exprimer ma profonde gratitude à mon encadrant professionnel, <strong>M. Mouaad EL MASLOUHI</strong>, pour la qualité de son encadrement, sa disponibilité de tous les instants et la confiance qu'il m'a accordée dès les premiers jours de mon intégration au sein de la Direction des Systèmes d'Information de l'Office National de l'Électricité et de l'Eau Potable (ONEE). Ses conseils avisés, sa rigueur méthodologique et sa vision métier ont considérablement enrichi la portée de ce projet.</p>
+      <p>Mes remerciements les plus sincères vont également à mon encadrant académique, <strong>M. Zakaria KHATAR</strong>, pour le suivi attentif qu'il a assuré tout au long de ce stage, pour ses remarques constructives lors des points d'étape, et pour la pédagogie avec laquelle il a su orienter mes réflexions vers une démarche d'ingénierie logicielle rigoureuse.</p>
+      <p>Je remercie également l'ensemble du corps professoral et administratif de l'<strong>EMSI Casablanca</strong> pour la qualité de la formation d'ingénieur dispensée durant ces quatre années, formation qui m'a permis d'aborder ce stage avec les compétences techniques et méthodologiques nécessaires.</p>
+      <p>J'adresse aussi mes vifs remerciements à l'ensemble des collaborateurs de l'ONEE, et en particulier aux membres de la DSI, pour leur accueil chaleureux, leur esprit d'équipe et leur disponibilité à répondre à mes questions.</p>
+      <p>Enfin, je ne saurais oublier de remercier les membres du jury qui me font l'honneur d'évaluer ce travail, ainsi que toute personne ayant contribué, de près ou de loin, à la réalisation de ce rapport.</p>
+    </div>
+""", "Remerciements", "iii"))
+
+# P4: RÉSUMÉ / ABSTRACT
+pages.append(make_page("""
+    <h1 class="chapter-title">Résumé</h1>
+    <p>Ce rapport présente le travail réalisé dans le cadre d'un stage de fin d'année de 4<sup>ème</sup> année d'ingénieur (filière IA & Data à l'EMSI Casablanca) d'une durée de deux mois effectué au sein de l'Office National de l'Électricité et de l'Eau Potable (ONEE), du 01 juillet au 31 août 2026. L'objectif de ce stage était de concevoir et développer une plateforme web intelligente (nommée SALA) dédiée à la gestion centralisée des ressources et moyens partagés de l'Office, en particulier la réservation des salles de réunion et la gestion du parc automobile.</p>
+    <p>Face aux limites constatées dans les processus actuels (manuels et dispersés), ce projet propose une solution unifiée s'appuyant sur une architecture trois tiers moderne combinant un frontend React.js avec Material Design 3, un backend Python développé avec le framework FastAPI exposant une API REST sécurisée par jetons JWT, et un SGBD Microsoft SQL Server / MySQL.</p>
+    <p>La plateforme couvre l'authentification sécurisée, la réservation intelligente de salles avec détection de conflits, la gestion complète des véhicules, chauffeurs, missions, carburant et maintenance, ainsi que des tableaux de bord décisionnels enrichis par une brique d'IA pour les suggestions automatiques.</p>
+    <p><strong>Mots clés :</strong> Gestion des ressources partagées, réservation de salles, gestion du parc automobile, React.js, FastAPI, SQL Server, architecture trois tiers, intelligence artificielle, aide à la décision, ONEE.</p>
+    
+    <div style="height:1.5px; background:linear-gradient(90deg, var(--primary), transparent); margin:3mm 0;"></div>
+    
+    <h1 class="chapter-title" style="background:#00695c;">Abstract</h1>
+    <p>This report presents the work carried out as part of a two-month 4th-year engineering internship (Artificial Intelligence & Data major at EMSI Casablanca) completed at the Office National de l'Électricité et de l'Eau Potable (ONEE), from July 1st to August 31st, 2026. The purpose of this internship was to design and develop an intelligent web platform (SALA) dedicated to the centralized management of the Office's shared resources, with a particular focus on meeting room booking and vehicle fleet management.</p>
+    <p>In response to current manual process limitations, this project proposes a unified solution built on a modern three-tier architecture combining a React.js frontend styled with Material Design 3, a Python FastAPI backend exposing a REST API secured through JWT tokens, and a Microsoft SQL Server relational database.</p>
+    <p>The system encompasses room booking, vehicle fleet management, driver dispatching, fuel tracking, maintenance alerts, and AI-driven decision-support dashboards.</p>
+    <p><strong>Keywords :</strong> Shared resource management, meeting room booking, fleet management, React.js, FastAPI, SQL Server, three-tier architecture, artificial intelligence, decision support, ONEE.</p>
+""", "Résumé / Abstract", "iv"))
+
+# P5: TOC 1
+pages.append(make_page("""
+    <h1 class="chapter-title">Table des Matières (1/2)</h1>
+    <table class="toc-table">
+      <tr><td class="toc-ch">Dédicace</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">ii</td></tr>
+      <tr><td class="toc-ch">Remerciements</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">iii</td></tr>
+      <tr><td class="toc-ch">Résumé / Abstract</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">iv</td></tr>
+      <tr><td class="toc-ch">Table des Matières</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">v</td></tr>
+      <tr><td class="toc-ch">Liste des Figures</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">vii</td></tr>
+      <tr><td class="toc-ch">Liste des Tableaux</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">viii</td></tr>
+      <tr><td class="toc-ch">Liste des Abréviations</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">ix</td></tr>
+      
+      <tr><td class="toc-ch">Introduction Générale</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">1</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 1 : Présentation de l'Organisme d'Accueil (ONEE)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">2</td></tr>
+      <tr><td class="toc-sec">1.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">2</td></tr>
+      <tr><td class="toc-sec">1.2 Présentation générale de l'ONEE</td><td><span class="toc-dots"></span></td><td class="toc-pg">2</td></tr>
+      <tr><td class="toc-sec">1.3 Les missions actuelles de l'ONEE (Production, Transport, Gestion)</td><td><span class="toc-dots"></span></td><td class="toc-pg">2</td></tr>
+      <tr><td class="toc-sec">1.4 Évolution de l'organisation du secteur électrique (Distribution partagée)</td><td><span class="toc-dots"></span></td><td class="toc-pg">3</td></tr>
+      <tr><td class="toc-sec">1.5 Organisation générale et principales directions de l'ONEE</td><td><span class="toc-dots"></span></td><td class="toc-pg">3</td></tr>
+      <tr><td class="toc-sec">1.6 Direction des Systèmes d'Information (DSI) et service d'accueil</td><td><span class="toc-dots"></span></td><td class="toc-pg">4</td></tr>
+      <tr><td class="toc-sec">1.7 Ressources et fonctionnement du service</td><td><span class="toc-dots"></span></td><td class="toc-pg">4</td></tr>
+      <tr><td class="toc-sec">1.8 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">4</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 2 : Analyse de l'Existant et Spécification des Besoins</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-sec">2.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-sec">2.2 Description du processus actuel de gestion des salles</td><td><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-sec">2.3 Description du processus actuel de gestion des véhicules</td><td><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-sec">2.4 Problèmes rencontrés et synthèse de l'existant</td><td><span class="toc-dots"></span></td><td class="toc-pg">6</td></tr>
+      <tr><td class="toc-sec">2.5 Analyse critique de l'existant</td><td><span class="toc-dots"></span></td><td class="toc-pg">6</td></tr>
+      <tr><td class="toc-sec">2.6 Besoins fonctionnels (Module Salles & Module Véhicules)</td><td><span class="toc-dots"></span></td><td class="toc-pg">7</td></tr>
+      <tr><td class="toc-sec">2.7 Besoins non fonctionnels</td><td><span class="toc-dots"></span></td><td class="toc-pg">8</td></tr>
+      <tr><td class="toc-sec">2.8 Contraintes du projet et solution proposée</td><td><span class="toc-dots"></span></td><td class="toc-pg">8</td></tr>
+      <tr><td class="toc-sec">2.9 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">8</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 3 : Étude Fonctionnelle et Modélisation UML</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-sec">3.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-sec">3.2 Identification des acteurs du système</td><td><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-sec">3.3 Diagramme de cas d'utilisation global</td><td><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-sec">3.4 Description détaillée des cas d'utilisation principaux</td><td><span class="toc-dots"></span></td><td class="toc-pg">10</td></tr>
+      <tr><td class="toc-sec">3.5 Diagrammes de séquence (Réservation salle, Affectation véhicule, Auth JWT)</td><td><span class="toc-dots"></span></td><td class="toc-pg">11</td></tr>
+      <tr><td class="toc-sec">3.6 Diagramme de classes métier</td><td><span class="toc-dots"></span></td><td class="toc-pg">12</td></tr>
+      <tr><td class="toc-sec">3.7 Règles de gestion</td><td><span class="toc-dots"></span></td><td class="toc-pg">12</td></tr>
+      <tr><td class="toc-sec">3.8 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">13</td></tr>
+    </table>
+""", "Table des Matières", "v"))
+
+# P6: TOC 2
+pages.append(make_page("""
+    <h1 class="chapter-title">Table des Matières (2/2)</h1>
+    <table class="toc-table">
+      <tr><td class="toc-ch">Chapitre 4 : Conception Technique et Architectures Logicielle & Physique</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">14</td></tr>
+      <tr><td class="toc-sec">4.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">14</td></tr>
+      <tr><td class="toc-sec">4.2 Architecture logicielle globale 3-Tiers</td><td><span class="toc-dots"></span></td><td class="toc-pg">14</td></tr>
+      <tr><td class="toc-sec">4.3 Architecture détaillée — Module de Réservation des Salles</td><td><span class="toc-dots"></span></td><td class="toc-pg">15</td></tr>
+      <tr><td class="toc-sec">4.4 Architecture détaillée — Module de Gestion du Parc Automobile</td><td><span class="toc-dots"></span></td><td class="toc-pg">16</td></tr>
+      <tr><td class="toc-sec">4.5 Architecture logique du backend FastAPI</td><td><span class="toc-dots"></span></td><td class="toc-pg">17</td></tr>
+      <tr><td class="toc-sec">4.6 Choix technologiques et justifications</td><td><span class="toc-dots"></span></td><td class="toc-pg">18</td></tr>
+      <tr><td class="toc-sec">4.7 Sécurité réseau et authentification JWT</td><td><span class="toc-dots"></span></td><td class="toc-pg">18</td></tr>
+      <tr><td class="toc-sec">4.8 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">18</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 5 : Conception de la Base de Données</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">19</td></tr>
+      <tr><td class="toc-sec">5.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">19</td></tr>
+      <tr><td class="toc-sec">5.2 Modèle Conceptuel de Données (MCD)</td><td><span class="toc-dots"></span></td><td class="toc-pg">19</td></tr>
+      <tr><td class="toc-sec">5.3 Modèle Logique de Données (MLD)</td><td><span class="toc-dots"></span></td><td class="toc-pg">19</td></tr>
+      <tr><td class="toc-sec">5.4 Modèle Physique de Données (MPD) et Schéma relationnel</td><td><span class="toc-dots"></span></td><td class="toc-pg">20</td></tr>
+      <tr><td class="toc-sec">5.5 Description détaillée des tables principales</td><td><span class="toc-dots"></span></td><td class="toc-pg">21</td></tr>
+      <tr><td class="toc-sec">5.6 Contraintes et intégrité référentielle</td><td><span class="toc-dots"></span></td><td class="toc-pg">22</td></tr>
+      <tr><td class="toc-sec">5.7 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">22</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 6 : Réalisation et Développement des Modules</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">23</td></tr>
+      <tr><td class="toc-sec">6.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">23</td></tr>
+      <tr><td class="toc-sec">6.2 Pipeline de réalisation du projet & organisation des dossiers</td><td><span class="toc-dots"></span></td><td class="toc-pg">23</td></tr>
+      <tr><td class="toc-sec">6.3 Frontend React.js et Design System Material Design 3</td><td><span class="toc-dots"></span></td><td class="toc-pg">24</td></tr>
+      <tr><td class="toc-sec">6.4 Module Assistant de Réservation Intelligente (Wizard 10 étapes)</td><td><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-sec">6.5 Module de Gestion du Parc Automobile (Missions, Carburant, Maintenance)</td><td><span class="toc-dots"></span></td><td class="toc-pg">26</td></tr>
+      <tr><td class="toc-sec">6.6 Module Tableau de Bord et Statistiques KPI</td><td><span class="toc-dots"></span></td><td class="toc-pg">27</td></tr>
+      <tr><td class="toc-sec">6.7 Module d'Intelligence Artificielle et d'aide à la décision</td><td><span class="toc-dots"></span></td><td class="toc-pg">27</td></tr>
+      <tr><td class="toc-sec">6.8 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">27</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 7 : Tests, Validation et Déploiement</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">28</td></tr>
+      <tr><td class="toc-sec">7.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">28</td></tr>
+      <tr><td class="toc-sec">7.2 Stratégie générale de tests (Unitaires, Fonctionnels, Intégration)</td><td><span class="toc-dots"></span></td><td class="toc-pg">28</td></tr>
+      <tr><td class="toc-sec">7.3 Tests de performance et sécurité</td><td><span class="toc-dots"></span></td><td class="toc-pg">29</td></tr>
+      <tr><td class="toc-sec">7.4 Procédure de déploiement et mise en production</td><td><span class="toc-dots"></span></td><td class="toc-pg">30</td></tr>
+      <tr><td class="toc-sec">7.5 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">30</td></tr>
+      
+      <tr><td class="toc-ch">Chapitre 8 : Intelligence Artificielle et Perspectives d'Évolution</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">31</td></tr>
+      <tr><td class="toc-sec">8.1 Introduction du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">31</td></tr>
+      <tr><td class="toc-sec">8.2 Rôle de l'IA dans la plateforme (Suggestions & Détection pro active)</td><td><span class="toc-dots"></span></td><td class="toc-pg">31</td></tr>
+      <tr><td class="toc-sec">8.3 Tableaux de bord intelligents et indicateurs KPI</td><td><span class="toc-dots"></span></td><td class="toc-pg">32</td></tr>
+      <tr><td class="toc-sec">8.4 Perspectives Machine Learning & Business Intelligence</td><td><span class="toc-dots"></span></td><td class="toc-pg">32</td></tr>
+      <tr><td class="toc-sec">8.5 Conclusion du chapitre</td><td><span class="toc-dots"></span></td><td class="toc-pg">32</td></tr>
+      
+      <tr><td class="toc-ch">Conclusion Générale</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">33</td></tr>
+      <tr><td class="toc-ch">Bibliographie et Webographie</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">34</td></tr>
+      <tr><td class="toc-ch">Annexes</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">35</td></tr>
+    </table>
+""", "Table des Matières", "vi"))
+
+# P7: LISTE DES FIGURES
+pages.append(make_page("""
+    <h1 class="chapter-title">Liste des Figures</h1>
+    <table class="toc-table">
+      <tr><td class="toc-ch">Figure 1.1 — Frise chronologique de l'historique de l'ONEE (1963-2012)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">2</td></tr>
+      <tr><td class="toc-ch">Figure 1.2 — Organigramme simplifié des principales directions de l'ONEE</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">3</td></tr>
+      <tr><td class="toc-ch">Figure 2.1 — Cartographie du processus actuel de réservation des salles (existant)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-ch">Figure 2.2 — Cartographie du processus actuel de gestion des véhicules (existant)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">5</td></tr>
+      <tr><td class="toc-ch">Figure 3.1 — Diagramme de cas d'utilisation global du module de réservation des salles</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-ch">Figure 3.2 — Diagramme de séquence : Réservation d'une salle de réunion</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">11</td></tr>
+      <tr><td class="toc-ch">Figure 3.3 — Diagramme de séquence : Affectation d'un véhicule à une mission</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">11</td></tr>
+      <tr><td class="toc-ch">Figure 3.4 — Diagramme de séquence : Authentification et génération du jeton JWT</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">11</td></tr>
+      <tr><td class="toc-ch">Figure 3.5 — Diagramme de classes du domaine fonctionnel des réunions</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">12</td></tr>
+      <tr style="background:#eff6ff;"><td class="toc-ch">Figure 4.1 — Architecture logicielle 3-Tiers du module de Réservation des Salles</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">15</td></tr>
+      <tr style="background:#e0f2f1;"><td class="toc-ch">Figure 4.2 — Architecture logicielle 3-Tiers du module de Gestion du Parc Automobile</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">16</td></tr>
+      <tr><td class="toc-ch">Figure 5.1 — Modèle Conceptuel de Données (MCD) global du système</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">19</td></tr>
+      <tr><td class="toc-ch">Figure 5.2 — Schéma relationnel complet de la base de données (18 tables)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">20</td></tr>
+      <tr><td class="toc-ch">Figure 6.1 — Écran d'accueil et tableau de bord général (Espace Employé SALA)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">24</td></tr>
+      <tr><td class="toc-ch">Figure 6.2 — Portail de connexion sécurisé par jeton JWT</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">24</td></tr>
+      <tr><td class="toc-ch">Figure 6.3 — Assistant Wizard 10 étapes : Étape 1 - Sélection de la date</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-ch">Figure 6.4 — Assistant Wizard 10 étapes : Étape 2 - Définition du créneau horaire</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-ch">Figure 6.5 — Assistant Wizard 10 étapes : Étape 8 - Sélection de la salle disponible</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-ch">Figure 6.6 — Assistant Wizard 10 étapes : Étape 10 - Écran récapitulatif & confirmation</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-ch">Figure 6.7 — Interface de planning des missions et d'affectation des véhicules</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">26</td></tr>
+      <tr><td class="toc-ch">Figure 6.8 — Tableau de bord statistique avec indicateurs KPI et graphiques</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">27</td></tr>
+    </table>
+""", "Liste des Figures", "vii"))
+
+# P8: LISTE DES TABLEAUX
+pages.append(make_page("""
+    <h1 class="chapter-title">Liste des Tableaux</h1>
+    <table class="toc-table">
+      <tr><td class="toc-ch">Tableau 1.1 — Principales directions centrales de l'ONEE et leurs domaines</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">3</td></tr>
+      <tr><td class="toc-ch">Tableau 2.1 — Synthèse des problèmes identifiés dans les processus existants</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">6</td></tr>
+      <tr><td class="toc-ch">Tableau 2.2 — Spécification des besoins fonctionnels du système</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">7</td></tr>
+      <tr><td class="toc-ch">Tableau 3.1 — Acteurs du système et leurs responsabilités principales</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">9</td></tr>
+      <tr><td class="toc-ch">Tableau 3.2 — Fiche descriptive du cas d'utilisation « Réserver une salle »</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">10</td></tr>
+      <tr><td class="toc-ch">Tableau 4.1 — Organisation des couches logicielles du backend FastAPI</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">17</td></tr>
+      <tr><td class="toc-ch">Tableau 4.2 — Matrice de justification des choix technologiques du projet</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">18</td></tr>
+      <tr><td class="toc-ch">Tableau 5.1 — Extrait du Modèle Physique de Données (MPD) et indexation</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">20</td></tr>
+      <tr><td class="toc-ch">Tableau 6.1 — Étapes du pipeline de réalisation suivi durant le stage</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">23</td></tr>
+      <tr><td class="toc-ch">Tableau 6.2 — Parcours de réservation en 10 étapes conçu sous Figma</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">25</td></tr>
+      <tr><td class="toc-ch">Tableau 6.3 — Extrait des principaux endpoints de l'API REST FastAPI</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">26</td></tr>
+      <tr><td class="toc-ch">Tableau 7.1 — Synthèse des tests unitaires réalisés sur le backend Pytest</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">28</td></tr>
+      <tr><td class="toc-ch">Tableau 7.2 — Résultats des tests de charge sous Locust (Simulations d'utilisateurs)</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">29</td></tr>
+      <tr><td class="toc-ch">Tableau 8.1 — Principaux indicateurs de performance KPI intégrés au tableau de bord</td><td class="toc-ch"><span class="toc-dots"></span></td><td class="toc-pg">32</td></tr>
+    </table>
+""", "Liste des Tableaux", "viii"))
+
+# P9: LISTE DES ABRÉVIATIONS
+pages.append(make_page("""
+    <h1 class="chapter-title">Liste des Abréviations</h1>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Abréviation</th><th>Signification & Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>API</strong></td><td>Application Programming Interface — Interface de programmation applicative</td></tr>
+        <tr><td><strong>BI</strong></td><td>Business Intelligence — Informatique décisionnelle et analyse de données</td></tr>
+        <tr><td><strong>CRUD</strong></td><td>Create, Read, Update, Delete — Opérations de base sur la persistance de données</td></tr>
+        <tr><td><strong>DSI</strong></td><td>Direction des Systèmes d'Information (ONEE)</td></tr>
+        <tr><td><strong>EMSI</strong></td><td>École Marocaine des Sciences de l'Ingénieur (Casablanca)</td></tr>
+        <tr><td><strong>EPIC</strong></td><td>Établissement Public à Caractère Industriel et Commercial</td></tr>
+        <tr><td><strong>HTTP / HTTPS</strong></td><td>HyperText Transfer Protocol (Secure) — Protocole de communication web sécurisé</td></tr>
+        <tr><td><strong>IA / ML</strong></td><td>Intelligence Artificielle / Machine Learning (Apprentissage Automatique)</td></tr>
+        <tr><td><strong>IHM / UI</strong></td><td>Interface Homme-Machine / User Interface (Interface Utilisateur)</td></tr>
+        <tr><td><strong>JSON</strong></td><td>JavaScript Object Notation — Format standard d'échange de données léger</td></tr>
+        <tr><td><strong>JWT</strong></td><td>JSON Web Token — Jeton de sécurité pour l'authentification stateless</td></tr>
+        <tr><td><strong>KPI</strong></td><td>Key Performance Indicator — Indicateur clé de performance décisionnelle</td></tr>
+        <tr><td><strong>MCD / MLD / MPD</strong></td><td>Modèle Conceptuel / Logique / Physique de Données (Méthodologie Merise)</td></tr>
+        <tr><td><strong>ONE / ONEP / ONEE</strong></td><td>Office National de l'Électricité / Eau Potable / Fusion ONEE (2012)</td></tr>
+        <tr><td><strong>ORM</strong></td><td>Object-Relational Mapping — Mapping objet-relationnel (ex: SQLAlchemy)</td></tr>
+        <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control — Contrôle d'accès basé sur les rôles utilisateur</td></tr>
+        <tr><td><strong>REST</strong></td><td>Representational State Transfer — Style architectural des API web</td></tr>
+        <tr><td><strong>SGBD</strong></td><td>Système de Gestion de Base de Données (ex: Microsoft SQL Server)</td></tr>
+        <tr><td><strong>SPA</strong></td><td>Single Page Application — Application web à page unique (React.js)</td></tr>
+        <tr><td><strong>UML</strong></td><td>Unified Modeling Language — Langage de modélisation unifié du génie logiciel</td></tr>
+      </tbody>
+    </table>
+""", "Liste des Abréviations", "ix"))
+
+# --- ARABIC PAGINATED PAGES (1 to 35) ---
+
+# P10 (Arabic Pg 1): INTRODUCTION GÉNÉRALE
+pages.append(make_page("""
+    <h1 class="chapter-title">Introduction Générale</h1>
+    
+    <h2>Contexte général et enjeu stratégique</h2>
+    <p>La transformation numérique constitue aujourd'hui l'un des leviers stratégiques majeurs pour les grandes organisations publiques et privées. Elle conditionne leur capacité à améliorer l'efficacité de leurs processus internes, à réduire leurs coûts de fonctionnement et à offrir un meilleur service à leurs usagers comme à leurs collaborateurs. Les établissements publics marocains, à l'image de l'Office National de l'Électricité et de l'Eau Potable (ONEE), s'inscrivent pleinement dans cette dynamique en engageant des chantiers de modernisation de leurs systèmes d'information.</p>
+    <p>Parmi ces processus figurent la gestion des ressources partagées, c'est-à-dire l'ensemble des moyens matériels et logistiques mutualisés entre plusieurs directions ou collaborateurs. Deux catégories de ressources partagées se distinguent particulièrement par leur caractère critique et leur fréquence d'utilisation quotidienne : les salles de réunion, indispensables à la coordination interne, et le parc automobile, essentiel à la mobilité des équipes techniques sur l'ensemble du territoire national.</p>
+    <p>C'est dans ce contexte que s'inscrit le présent stage de fin d'année de 4<sup>ème</sup> année d'ingénieur (filière IA & Data à l'EMSI Casablanca), réalisé au sein de la Direction des Systèmes d'Information de l'ONEE du 01 juillet au 31 août 2026. L'objectif était de concevoir, développer et déployer une plateforme web intelligente unifiant la gestion de ces deux catégories de ressources.</p>
+
+    <h2>Problématique centrale</h2>
+    <p>Avant le lancement de ce projet, la gestion des salles de réunion et des véhicules reposait sur des outils manuels et dispersés (tableurs Excel, échanges par courriel, registres papier). Cette situation engendrait des conflits d'occupation fréquents, un manque de traçabilité, des pertes de temps considérables pour les gestionnaires et une incapacité à exploiter l'historique des données à des fins d'optimisation.</p>
+
+    <h2>Objectifs du stage</h2>
+    <ul>
+      <li>Digitaliser intégralement le processus de réservation des salles et d'affectation des véhicules ;</li>
+      <li>Concevoir une architecture trois tiers robuste, sécurisée et scalable basée sur React.js et FastAPI ;</li>
+      <li>Modéliser et implémenter la base de données relationnelle sous SQL Server selon la démarche Merise / UML ;</li>
+      <li>Intégrer des fonctionnalités d'intelligence artificielle apportant une réelle valeur décisionnelle ;</li>
+      <li>Garantir la sécurité à travers une authentification JWT et une gestion fine des rôles (RBAC).</li>
+    </ul>
+
+    <h2>Structure du rapport</h2>
+    <p>Le rapport s'articules autour de 8 chapitres : le cadre d'accueil (Ch. 1), l'analyse des besoins (Ch. 2), l'étude fonctionnelle UML (Ch. 3), la conception technique et les architectures (Ch. 4), la conception de la base de données (Ch. 5), la réalisation logicielle (Ch. 6), les tests et le déploiement (Ch. 7), et enfin la dimension IA et les perspectives d'évolution (Ch. 8).</p>
+""", "Introduction Générale", "1"))
+
+# P11 (Arabic Pg 2): CHAPITRE 1 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 1 : Présentation de l'Organisme d'Accueil</h1>
+    
+    <div class="intro-box">
+      <strong>1.1 Introduction du chapitre</strong>
+      Ce premier chapitre a pour objectif de présenter l'organisme d'accueil au sein duquel s'est déroulé ce stage de fin d'année, à savoir l'Office National de l'Électricité et de l'Eau Potable (ONEE). Il retrace l'historique de cet établissement public majeur au Maroc, décrit ses missions actuelles, la manière dont son organisation a évolué au fil des réformes, ses principales directions centrales, ainsi que la Direction des Systèmes d'Information (DSI) qui a accueilli le projet.
+    </div>
+
+    <h2>1.2 Présentation générale de l'ONEE</h2>
+    <p>L'Office National de l'Électricité et de l'Eau Potable (ONEE) est un établissement public marocain à caractère industriel et commercial (EPIC), doté de la personnalité morale et de l'autonomie financière. Il est placé sous la tutelle du Ministère de la Transition Énergétique et du Développement Durable et constitue l'un des piliers des infrastructures stratégiques du Royaume du Maroc.</p>
+    <p>L'ONEE est né en 2012 de la fusion de deux entités historiques majeures :</p>
+    <ul>
+      <li><strong>L'Office National de l'Électricité (ONE)</strong>, créé en 1963 pour planifier, produire et transporter l'électricité ;</li>
+      <li><strong>L'Office National de l'Eau Potable (ONEP)</strong>, créé en 1972 pour planifier et produire l'eau potable à l'échelle nationale.</li>
+    </ul>
+    <p>Cette fusion stratégique avait pour ambition de créer un opérateur industriel intégré capable d'optimiser les investissements, d'améliorer la synergie entre les secteurs de l'eau et de l'électricité et d'accélérer le développement durable à travers tout le Royaume.</p>
+
+    <h2>1.3 Les missions actuelles de l'ONEE</h2>
+    <p>Au sein de la Branche Électricité de l'ONEE, l'Office assure quatre missions d'intérêt général majeures :</p>
+    <ul>
+      <li><strong>Production d'électricité :</strong> L'ONEE exploite un parc de production très diversifié combinant centrales thermiques (charbon, gaz naturel), aménagements hydroélectriques, parcs éoliens et centrales solaires photovoltaïques et thermodynamiques (Noor).</li>
+      <li><strong>Transport de l'électricité :</strong> L'Office gère et développe le réseau national d'électricité Haute Tension (HT) et Très Haute Tension (THT), s'étendant sur plus de 30 000 kilomètres de lignes.</li>
+      <li><strong>Gestion du système électrique national :</strong> L'ONEE assure en temps réel le pilotage du réseau électrique et garantit à chaque instant l'équilibre strict entre l'offre et la demande.</li>
+      <li><strong>Développement des énergies renouvelables :</strong> L'ONEE est au cœur de la stratégie énergétique nationale visant à porter la part des énergies renouvelables à plus de 52% du mix électrique d'ici 2030.</li>
+    </ul>
+""", "Chapitre 1 — Organisme d'Accueil", "2"))
+
+# P12 (Arabic Pg 3): CHAPITRE 1 (Part 2)
+pages.append(make_page("""
+    <h2>1.4 Évolution de l'organisation du secteur électrique</h2>
+    <p>Une question fréquemment soulevée concerne l'évolution du rôle de l'ONEE dans la distribution de l'électricité. Historiquement, l'ONE/ONEE assurait l'intégralité de la chaîne (production, transport et distribution directe). Dans le cadre de la modernisation des services publics au Maroc, la distribution d'électricité et d'eau potable est progressivement confiée à des Régies Autonomes communales, à des Sociétés Déléguées privées, et plus récemment aux Sociétés Régionales Multiservices (SRM).</p>
+    <p>Cette réorganisation territoriale permet à l'ONEE de concentrer prioritairement ses efforts sur ses cœurs de métier nationaux (production, grand transport HT/THT, équilibre du réseau et transition énergétique) tout en accompagnant les acteurs régionaux.</p>
+
+    <h2>1.5 Organisation générale et principales directions de l'ONEE</h2>
+    <p>L'ONEE est structuré en plusieurs directions centrales et régionales rattachées à la Direction Générale. Le tableau ci-dessous résume les principales directions de la Branche Électricité :</p>
+    
+    <p class="table-caption">Tableau 1.1 — Principales directions centrales de l'ONEE et leurs domaines de responsabilité</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:35%;">Direction Centrale</th><th>Domaine de responsabilité principal</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Direction Générale</strong></td><td>Pilotage stratégique global, gouvernance et relations institutionnelles</td></tr>
+        <tr><td><strong>Direction Production</strong></td><td>Exploitation et maintenance du parc de centrales (thermique, hydro, éolien, solaire)</td></tr>
+        <tr><td><strong>Direction Transport</strong></td><td>Exploitation, maintenance et extension des réseaux Haute et Très Haute Tension</td></tr>
+        <tr><td><strong>Direction Développement</strong></td><td>Études de faisabilité et ingénierie des nouveaux grands projets d'infrastructures</td></tr>
+        <tr><td><strong>Direction Systèmes d'Information (DSI)</strong></td><td>Pilotage des systèmes d'information, transformation digitale et infrastructure IT</td></tr>
+        <tr><td><strong>Direction Ressources Humaines</strong></td><td>Gestion du capital humain, recrutement et formation continue des collaborateurs</td></tr>
+        <tr><td><strong>Direction Finance & Achats</strong></td><td>Gestion budgétaire, comptabilité analytique et passation des marchés publics</td></tr>
+        <tr><td><strong>Direction Moyens Généraux</strong></td><td>Gestion du patrimoine immobilier, de la logistique, des salles et de la flotte automobile</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 1 — Organisme d'Accueil", "3"))
+
+# P13 (Arabic Pg 4): CHAPITRE 1 (Part 3)
+pages.append(make_page("""
+    <h2>1.6 Direction des Systèmes d'Information (DSI) et service d'accueil</h2>
+    <p>Le stage s'est déroulé au sein de la <strong>Direction des Systèmes d'Information (DSI)</strong> de l'ONEE Branche Électricité, et plus particulièrement au sein du service en charge du développement et de la maintenance des applications de gestion interne.</p>
+    <p>La DSI a pour rôle de concrétiser la stratégie de digitalisation de l'Office. Elle accompagne l'ensemble des métiers dans l'automatisation de leurs processus, la sécurisation des données et la mise à disposition d'outils informatiques performants. L'encadrement du stagiaire a été assuré par <strong>M. Mouaad EL MASLOUHI</strong>, qui a guidé l'ensemble de la démarche d'ingénierie et de conception.</p>
+
+    <h2>1.7 Ressources et fonctionnement du service</h2>
+    <p>Le service dispose d'une équipe pluridisciplinaire réunissant des chefs de projets, des ingénieurs d'études et de développement, des administrateurs de bases de données (DBA) et des spécialistes en sécurité applicative. Les projets sont menés en combinant une rigueur méthodologique inspirée du cycle en V pour les phases de cadrage/validation avec la réactivité des méthodes agiles (itérations courtes, revues régulières) pour les phases de développement.</p>
+    <p>Sur le plan matériel, l'environnement de développement mis à disposition comprenait des serveurs d'intégration dédiés, des bases de données de test SQL Server conformes aux environnements de production de l'Office, et les outils modernes de développement web.</p>
+
+    <div class="conclusion-box">
+      <strong>1.8 Conclusion du chapitre</strong>
+      Ce premier chapitre a permis de situer le contexte institutionnel et organisationnel dans lequel s'est inscrit ce stage de 4<sup>ème</sup> année d'ingénieur. La compréhension de l'organisation de l'ONEE et des missions de la DSI a constitué un préalable indispensable avant d'aborder l'analyse détaillée des besoins métier de la plateforme SALA, qui fait l'objet du chapitre suivant.
+    </div>
+""", "Chapitre 1 — Organisme d'Accueil", "4"))
+
+# P14 (Arabic Pg 5): CHAPITRE 2 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 2 : Analyse de l'Existant et Spécification des Besoins</h1>
+    
+    <div class="intro-box">
+      <strong>2.1 Introduction du chapitre</strong>
+      Avant d'entamer toute démarche de conception et de développement, il est essentiel d'analyser en profondeur les méthodes existantes au sein de l'organisation pour en dégager les limites. Ce chapitre présente l'étude détaillée des anciens processus manuels de gestion des salles de réunion et des véhicules de service à l'ONEE, formalise la synthèse des problèmes identifiés et établit le cahier des charges fonctionnel et non fonctionnel de la solution web SALA.
+    </div>
+
+    <h2>2.2 Description du processus actuel de gestion des salles</h2>
+    <p>Avant la mise en place de la solution web, la réservation d'une salle de réunion à l'ONEE reposait sur une procédure informelle et manuelle :</p>
+    <ul>
+      <li>L'organisateur devait contacter le secrétariat ou le gestionnaire du bâtiment par courriel ou téléphone pour vérifier la disponibilité d'une salle ;</li>
+      <li>Le gestionnaire consultait un planning physique sur registre papier ou un fichier tableur Excel local ;</li>
+      <li>Si la salle était disponible, la réservation était notée manuellement, sans notification automatique aux participants ni réservation des équipements spécifiques (visioconférence, projecteur).</li>
+    </ul>
+    <p>Cette approche révélait rapidement ses limites lors des périodes de forte affluence, provoquant des chevauchements d'horaires et des annulations de dernière minute.</p>
+
+    <h2>2.3 Description du processus actuel de gestion des véhicules</h2>
+    <p>De manière analogue, la gestion du parc automobile reposait sur des demandes de mission sur formulaire papier visé par le chef de service :</p>
+    <ul>
+      <li>Le demandeur remplissait un formulaire imprimé en précisant la destination, les dates et le motif du déplacement ;</li>
+      <li>Le gestionnaire du parc vérifiait manuellement sur des fiches d'inventaire la disponibilité des véhicules et des chauffeurs ;</li>
+      <li>Le suivi des kilométrages, des consommations de carburant, des échéances d'assurance et des visites techniques s'effectuait de manière morcelée sur plusieurs fichiers tableurs non centralisés.</li>
+    </ul>
+""", "Chapitre 2 — Analyse & Besoins", "5"))
+
+# P15 (Arabic Pg 6): CHAPITRE 2 (Part 2)
+pages.append(make_page("""
+    <h2>2.4 Problèmes rencontrés et synthèse de l'existant</h2>
+    <p>L'analyse conjointe de ces deux processus existants a mis en évidence un ensemble de dysfonctionnements récurrents résumés dans le tableau suivant :</p>
+
+    <p class="table-caption">Tableau 2.1 — Synthèse des problèmes identifiés dans les processus manuels existants</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:22%;">Domaine</th><th style="width:38%;">Problème identifié</th><th>Conséquence opérationnelle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Salles de réunion</strong></td><td>Absence de vue centralisée en temps réel</td><td>Conflits de réservation et réservations doubles fréquentes</td></tr>
+        <tr><td><strong>Salles de réunion</strong></td><td>Validation manuelle et lente par courriel</td><td>Temps perdu et incertitude pour l'organisateur</td></tr>
+        <tr><td><strong>Salles de réunion</strong></td><td>Gestion séparée des équipements/repas</td><td>Oubli de matériel réseau ou de la pause-café lors des réunions</td></tr>
+        <tr><td><strong>Parc Automobile</strong></td><td>Suivi des véhicules dispersé sur tableurs</td><td>Manque de visibilité globale sur l'état réel de la flotte</td></tr>
+        <tr><td><strong>Parc Automobile</strong></td><td>Absence d'alertes sur les échéances IT/Assurance</td><td>Risque de non-conformité légale ou de panne non anticipée</td></tr>
+        <tr><td><strong>Parc Automobile</strong></td><td>Affectation manuelle véhicules & chauffeurs</td><td>Sous-optimisation du parc et inégalité de charge des véhicules</td></tr>
+        <tr><td><strong>Transverse</strong></td><td>Absence de tableaux de bord et d'historique</td><td>Impossibilité pour la direction d'optimiser les coûts et ressources</td></tr>
+      </tbody>
+    </table>
+
+    <h2>2.5 Analyse critique de l'existant</h2>
+    <p>L'analyse critique démontre que le manque d'unification et d'automatisation constituait le principal frein à l'efficacité opérationnelle des services. Il est apparu indispensable de concevoir un système d'information unique capable d'offrir une vision consolidée en temps réel, d'automatiser les vérifications de contraintes et d'intégrer des mécanismes d'aide à la décision par intelligence artificielle.</p>
+""", "Chapitre 2 — Analyse & Besoins", "6"))
+
+# P16 (Arabic Pg 7): CHAPITRE 2 (Part 3)
+pages.append(make_page("""
+    <h2>2.6 Besoins fonctionnels du système</h2>
+    <p>Les exigences fonctionnelles du système SALA ont été formalisées sous forme de spécifications détaillées regroupées par domaine :</p>
+
+    <p class="table-caption">Tableau 2.2 — Spécification des besoins fonctionnels de la plateforme web SALA</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:15%;">Réf.</th><th style="width:30%;">Module</th><th>Spécification du besoin fonctionnel</th><th style="width:15%;">Priorité</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>BF-S01</strong></td><td>Réservation Salles</td><td>Consulter la disponibilité des salles en temps réel avec filtrage par capacité et équipements</td><td>Haute</td></tr>
+        <tr><td><strong>BF-S02</strong></td><td>Réservation Salles</td><td>Réserver une salle via un assistant guidé en 10 étapes intégrant les pauses-café et repas</td><td>Haute</td></tr>
+        <tr><td><strong>BF-S03</strong></td><td>Réservation Salles</td><td>Détection automatique et proactive des conflits d'horaires et décalages créneaux</td><td>Haute</td></tr>
+        <tr><td><strong>BF-S04</strong></td><td>Réservation Salles</td><td>Gestion des invités internes (collaborateurs ONEE) et externes avec génération de convocations</td><td>Moyenne</td></tr>
+        <tr><td><strong>BF-V01</strong></td><td>Gestion Véhicules</td><td>Consulter l'état et la disponibilité du parc automobile (immatriculation, marque, statut)</td><td>Haute</td></tr>
+        <tr><td><strong>BF-V02</strong></td><td>Gestion Véhicules</td><td>Demander un véhicule pour une mission avec affectation automatique ou manuelle d'un chauffeur</td><td>Haute</td></tr>
+        <tr><td><strong>BF-V03</strong></td><td>Gestion Véhicules</td><td>Suivre le kilométrage, les pleins de carburant et calculer le coût moyen au kilomètre</td><td>Moyenne</td></tr>
+        <tr><td><strong>BF-V04</strong></td><td>Gestion Véhicules</td><td>Gérer les échéances administratives (assurance, visite technique) avec alertes automatiques</td><td>Haute</td></tr>
+        <tr><td><strong>BF-T01</strong></td><td>Transverse / IA</td><td>Proposer des suggestions automatiques de salles adaptées via un moteur de recommandation IA</td><td>Moyenne</td></tr>
+        <tr><td><strong>BF-T02</strong></td><td>Transverse / Admin</td><td>Tableaux de bord statistiques interactifs avec indicateurs KPI d'occupation et de coût</td><td>Haute</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 2 — Analyse & Besoins", "7"))
+
+# P17 (Arabic Pg 8): CHAPITRE 2 (Part 4)
+pages.append(make_page("""
+    <h2>2.7 Besoins non fonctionnels</h2>
+    <ul>
+      <li><strong>Sécurité et confidentialité :</strong> Authentification obligatoire via jetons JWT (JSON Web Tokens), chiffrement des mots de passe avec Bcrypt, et contrôle d'accès basé sur les rôles (RBAC).</li>
+      <li><strong>Performance et réactivité :</strong> Temps de réponse des API backend inférieur à 300 millisecondes et chargement des pages frontend en moins de 1.5 seconde.</li>
+      <li><strong>Ergonomie et UX :</strong> Interface moderne et claire développée selon les principes de Google Material Design 3, compatible avec les ordinateurs de bureau et tablettes.</li>
+      <li><strong>Disponibilité et maintenabilité :</strong> Architecture modulaire permettant l'ajout de nouveaux modules sans interruption de service et couverture de code par tests unitaires.</li>
+    </ul>
+
+    <h2>2.8 Contraintes du projet et solution proposée</h2>
+    <p>Le développement de la plateforme s'est inscrit dans deux contraintes majeures : une durée ferme de deux mois de stage et le respect des standards technologiques préconisés par la DSI de l'ONEE (React.js, Python, SQL Server). La solution retenue est une plateforme unique structurée en 3 tiers offrant une expérience fluide aux utilisateurs et des outils de pilotage complets aux responsables.</p>
+
+    <div class="conclusion-box">
+      <strong>2.9 Conclusion du chapitre</strong>
+      Ce deuxième chapitre a permis d'établir un diagnostic clair des faiblesses des anciens processus et de dresser le cahier des charges rigoureux de la solution web SALA. Ces spécifications servent de socle à la modélisation fonctionnelle et architecturale détaillée présentée dans le chapitre suivant.
+    </div>
+""", "Chapitre 2 — Analyse & Besoins", "8"))
+
+# P18 (Arabic Pg 9): CHAPITRE 3 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 3 : Étude Fonctionnelle et Modélisation UML</h1>
+    
+    <div class="intro-box">
+      <strong>3.1 Introduction du chapitre</strong>
+      Ce chapitre est consacré à l'étude fonctionnelle détaillée du système à travers le langage de modélisation unifié UML (Unified Modeling Language). Il définit les différents acteurs interagissant avec l'application, détaille les cas d'utilisation principaux et présente la modélisation dynamique via les diagrammes de séquence ainsi que la vue statique à travers le diagramme de classes.
+    </div>
+
+    <h2>3.2 Identification des acteurs du système</h2>
+    <p>L'analyse fonctionnelle a permis d'identifier cinq catégories d'acteurs disposant de droits spécifiques :</p>
+
+    <p class="table-caption">Tableau 3.1 — Acteurs du système et leurs responsabilités principales</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Acteur</th><th style="width:35%;">Description</th><th>Responsabilités principales</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Collaborateur / Employé</strong></td><td>Utilisateur standard de l'ONEE</td><td>Réserver une salle, demander un véhicule pour mission, consulter son historique</td></tr>
+        <tr><td><strong>Gestionnaire de Salles</strong></td><td>Responsable des espaces de réunion</td><td>Valider ou refuser les demandes de réservation, gérer le référentiel des salles</td></tr>
+        <tr><td><strong>Gestionnaire de Parc</strong></td><td>Responsable de la flotte automobile</td><td>Affecter les véhicules et chauffeurs, suivre le carburant, la maintenance et assurances</td></tr>
+        <tr><td><strong>Chauffeur</strong></td><td>Conducteur rattaché au parc</td><td>Consulter ses ordres de mission, saisir les kilométrages départ/retour et anomalies</td></tr>
+        <tr><td><strong>Administrateur DSI</strong></td><td>Administrateur système de la plateforme</td><td>Gérer les comptes utilisateurs, les rôles (RBAC), les paramètres globaux et journaux d'audit</td></tr>
+      </tbody>
+    </table>
+
+    <h2>3.3 Diagramme de cas d'utilisation global</h2>
+    <p>Le diagramme de cas d'utilisation global structure l'ensemble des fonctionnalités autour des deux grands domaines métiers (Salles et Véhicules) et des fonctions transverses d'authentification et d'administration.</p>
+""", "Chapitre 3 — Étude Fonctionnelle UML", "9"))
+
+# P19 (Arabic Pg 10): CHAPITRE 3 (Part 2)
+pages.append(make_page("""
+    <h2>3.4 Description détaillée des cas d'utilisation principaux</h2>
+    <p>Afin d'illustrer la précision de la modélisation fonctionnelle, le tableau suivant détaille la fiche descriptive du cas d'utilisation clé « Réserver une salle de réunion » :</p>
+
+    <p class="table-caption">Tableau 3.2 — Fiche descriptive détaillée du cas d'utilisation « Réserver une salle »</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Rubrique</th><th>Description fonctionnelle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Nom du Cas</strong></td><td>Réserver une salle de réunion (Module SALA)</td></tr>
+        <tr><td><strong>Acteur Principal</strong></td><td>Collaborateur / Employé ONEE authentifié</td></tr>
+        <tr><td><strong>Préconditions</strong></td><td>L'utilisateur est connecté à l'application avec un jeton JWT valide</td></tr>
+        <tr><td><strong>Scénario Nominal</strong></td><td>
+          1. L'utilisateur lance l'assistant de réservation (Wizard).<br/>
+          2. Il sélectionne la date, les heures de début et de fin.<br/>
+          3. Il indique le nombre de participants et les équipements requis.<br/>
+          4. Le système filtre et présente les salles disponibles.<br/>
+          5. L'utilisateur choisit la salle, ajoute les services logistiques (pause-café, repas) et saisit la liste des invités.<br/>
+          6. Il valide la demande. Le système enregistre la réservation avec le statut « En attente » et notifie le gestionnaire.
+        </td></tr>
+        <tr><td><strong>Scénarios Alternatifs</strong></td><td>
+          A1. Conflit détecté : le moteur d'IA propose des créneaux ou des salles alternatives proches.<br/>
+          A2. Capacité insuffisante : le système alerte l'utilisateur et filtre les salles compatibles.
+        </td></tr>
+        <tr><td><strong>Postconditions</strong></td><td>La réservation est enregistrée en BDD et une notification de confirmation est transmise.</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 3 — Étude Fonctionnelle UML", "10"))
+
+# P20 (Arabic Pg 11): CHAPITRE 3 (Part 3)
+pages.append(make_page("""
+    <h2>3.5 Diagrammes de séquence principaux</h2>
+    <p>La modélisation dynamique de l'application a été réalisée à l'aide de diagrammes de séquence UML illustrant la chronologie des échanges d'objets entre le Frontend React, le Backend FastAPI, le SGBD SQL Server et les acteurs.</p>
+    
+    <h3>3.5.1 Séquence : Réservation d'une salle de réunion</h3>
+    <p>Le processus débute par la vérification de disponibilité en temps réel déclenchée par le frontend. Dès soumission du formulaire récapitulatif par l'utilisateur, l'API FastAPI exécute la vérification finale d'absence de chevauchement sur la table <code>RESERVATION</code>, insère l'enregistrement avec le statut <code>En attente</code> et déclenche l'envoi d'un événement de notification au responsable de salle.</p>
+
+    <h3>3.5.2 Séquence : Affectation d'un véhicule à une mission</h3>
+    <p>Ce diagramme décrit la soumission d'une demande de mission par un collaborateur, le contrôle automatique par l'API de la validité de l'assurance et du contrôle technique du véhicule sélectionné, suivi de la validation par le gestionnaire de parc avec affectation d'un chauffeur disponible.</p>
+
+    <h3>3.5.3 Séquence : Authentification et génération du jeton JWT</h3>
+    <p>Ce diagramme détaille la saisie des identifiants sur la page de Login, la vérification du hachage de mot de passe Bcrypt par le backend, et la restitution au client React d'un jeton JWT signé incluant l'identifiant et le rôle de l'utilisateur.</p>
+""", "Chapitre 3 — Étude Fonctionnelle UML", "11"))
+
+# P21 (Arabic Pg 12): CHAPITRE 3 (Part 4)
+pages.append(make_page("""
+    <h2>3.6 Diagramme de classes métier</h2>
+    <p>Le diagramme de classes constitue le cœur de la modélisation statique. Il définit les entités du domaine métier et leurs associations :</p>
+    <ul>
+      <li><code>Utilisateur</code> : classe représentant tout agent de l'ONEE, associée à un <code>Role</code> (Collaborateur, Gestionnaire, Admin).</li>
+      <li><code>Salle</code> : rattachée à un <code>Batiment</code> et liée à plusieurs <code>Equipement</code>.</li>
+      <li><code>Reservation</code> : classe centrale reliant un <code>Utilisateur</code> (créateur), une <code>Salle</code>, plusieurs <code>Participant</code> (internes et externes) et des options <code>ServicesLogistiques</code> (pause-café, repas).</li>
+      <li><code>Vehicule</code> : caractérisé par son immatriculation, kilométrage et statut, lié aux entités <code>Mission</code>, <code>Carburant</code>, <code>Maintenance</code> et <code>Assurance</code>.</li>
+      <li><code>Chauffeur</code> : spécialisation de l'utilisateur disposant de détails sur son permis de conduire.</li>
+    </ul>
+
+    <h2>3.7 Règles de gestion métier</h2>
+    <ul>
+      <li><strong>RG-01 :</strong> Une salle ne peut faire l'objet que d'une seule réservation confirmée sur une même plage horaire.</li>
+      <li><strong>RG-02 :</strong> Un véhicule ne peut être affecté à une mission si sa visite technique ou son assurance est expirée.</li>
+      <li><strong>RG-03 :</strong> Un chauffeur ne peut pas être planifié simultanément sur deux missions chevauchantes.</li>
+    </ul>
+""", "Chapitre 3 — Étude Fonctionnelle UML", "12"))
+
+# P22 (Arabic Pg 13): CHAPITRE 3 (Part 5)
+pages.append(make_page("""
+    <div class="conclusion-box">
+      <strong>3.8 Conclusion du chapitre</strong>
+      Ce troisième chapitre a permis de modéliser avec rigueur les aspects fonctionnels, dynamiques et statiques du système à l'aide des diagrammes UML. Cette formalisation détaillée constitue une passerelle directe vers les choix d'architecture technique et de conception logicielle qui sont développés dans le chapitre 4.
+    </div>
+""", "Chapitre 3 — Étude Fonctionnelle UML", "13"))
+
+# P23 (Arabic Pg 14): CHAPITRE 4 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 4 : Conception Technique et Architectures Logicielle & Physique</h1>
+    
+    <div class="intro-box">
+      <strong>4.1 Introduction du chapitre</strong>
+      La réussite d'un projet informatique repose sur la solidité et l'évolutivité de sa conception technique. Ce chapitre détaille l'architecture logicielle globale à 3 tiers retenue pour la plateforme SALA, présente les schémas d'architecture détaillés pour les modules de réservation des salles et de gestion des véhicules, et justifie l'ensemble des choix technologiques effectués (React.js, FastAPI, SQL Server).
+    </div>
+
+    <h2>4.2 Architecture logicielle globale 3-Tiers</h2>
+    <p>La solution adopte une architecture client-serveur moderne découpée en 3 tiers indépendants :</p>
+    <ul>
+      <li><strong>Tier Présentation (Frontend) :</strong> Une application Single Page Application (SPA) développée en React.js avec JavaScript/JSX, utilisant Material UI (MD3) pour garantir une interface utilisateur réactive, moderne et ergonomique.</li>
+      <li><strong>Tier Métier (Backend API REST) :</strong> Développé en Python avec le framework asynchrone FastAPI. Il fournit des API REST stateless sécurisées, encapsule l'ensemble de la logique métier, contrôle la sécurité JWT et intègre la brique d'IA.</li>
+      <li><strong>Tier Données (Base de Données) :</strong> Assuré par Microsoft SQL Server (ou MySQL), garantissant la persistance des données, l'intégrité référentielle et des performances d'indexation élevées.</li>
+    </ul>
+""", "Chapitre 4 — Architecture Technique", "14"))
+
+# P24 (Arabic Pg 15): CHAPITRE 4 (Part 2 - ARCHITECTURE SALLES)
+pages.append(make_page("""
+    <h2>4.3 Architecture détaillée — Module de Réservation des Salles</h2>
+    <p>Le schéma ci-dessous illustre l'architecture complète du module de réservation des salles de réunion :</p>
+
+    <div class="figure-box">
+      <img src="images/architecture_reservation_salles.png" alt="Architecture Réservation des Salles" style="max-height:160mm;" />
+      <div class="figure-caption">Figure 4.1 — Architecture logicielle 3-Tiers du module de Réservation des Salles de Réunion (Plateforme SALA)</div>
+    </div>
+    
+    <p>Comme illustré ci-dessus, la couche présentation React communique via HTTPS avec l'API REST FastAPI. Les requêtes d'authentification génèrent un jeton JWT. Le moteur <code>Booking Engine</code> contrôle l'absence de conflit horaire en base de données SQL Server, tandis que le module <code>AI Suggestion Engine</code> calcule un score d'adéquation pour suggérer la meilleure salle.</p>
+""", "Chapitre 4 — Architecture Technique", "15"))
+
+# P25 (Arabic Pg 16): CHAPITRE 4 (Part 3 - ARCHITECTURE VÉHICULES)
+pages.append(make_page("""
+    <h2>4.4 Architecture détaillée — Module de Gestion du Parc Automobile</h2>
+    <p>Le schéma ci-dessous présente l'architecture logicielle dédiée à la gestion de la flotte automobile :</p>
+
+    <div class="figure-box">
+      <img src="images/architecture_gestion_vehicules.png" alt="Architecture Gestion des Véhicules" style="max-height:160mm;" />
+      <div class="figure-caption">Figure 4.2 — Architecture logicielle 3-Tiers du module de Gestion du Parc Automobile et Véhicules de Service</div>
+    </div>
+
+    <p>Cette architecture met en avant l'interaction entre les formulaires de demande de mission, le module de contrôle des disponibilités véhicules/chauffeurs, le gestionnaire d'alertes de contrôle technique et d'assurance, et le moteur analytique de calcul des coûts de carburant au kilomètre.</p>
+""", "Chapitre 4 — Architecture Technique", "16"))
+
+# P26 (Arabic Pg 17): CHAPITRE 4 (Part 4)
+pages.append(make_page("""
+    <h2>4.5 Architecture logique du backend FastAPI</h2>
+    <p>Le backend Python FastAPI adopte une organisation en couches inspirée du pattern Modèle-Service-Contrôleur (MVC) adapté aux API REST moderne :</p>
+
+    <p class="table-caption">Tableau 4.1 — Organisation en couches du code source du backend FastAPI</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Couche Logicielle</th><th style="width:25%;">Composant Python</th><th>Rôle et responsabilité dans l'application</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Routers (Contrôleurs)</strong></td><td><code>app/routers/</code></td><td>Exposition des endpoints HTTP REST (GET, POST, PUT, DELETE) et gestion des réponses JSON</td></tr>
+        <tr><td><strong>Services (Métier)</strong></td><td><code>app/services/</code></td><td>Implémentation des règles de gestion métier, calculs des conflits et logique d'IA</td></tr>
+        <tr><td><strong>Repositories (Accès BDD)</strong></td><td><code>app/repositories/</code></td><td>Encapsulation des requêtes SQL et des interactions avec la base via l'ORM SQLAlchemy</td></tr>
+        <tr><td><strong>Schemas (Pydantic)</strong></td><td><code>app/schemas/</code></td><td>Validation stricte des types de données entrantes/sortantes et sérialisation JSON</td></tr>
+        <tr><td><strong>Models (SQLAlchemy)</strong></td><td><code>app/models/</code></td><td>Définition des classes ORM mappées sur les tables de la base de données SQL Server</td></tr>
+        <tr><td><strong>Core & Security</strong></td><td><code>app/core/</code></td><td>Gestion de la sécurité JWT, du hachage Bcrypt, de la configuration et des middlewares CORS</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 4 — Architecture Technique", "17"))
+
+# P27 (Arabic Pg 18): CHAPITRE 4 (Part 5)
+pages.append(make_page("""
+    <h2>4.6 Choix technologiques et justifications</h2>
+    <p class="table-caption">Tableau 4.2 — Matrice de justification des choix technologiques retenus pour la plateforme</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:20%;">Technologie</th><th style="width:20%;">Rôle</th><th>Justification technique et métier</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>React.js 18</strong></td><td>Framework Frontend</td><td>Architecture par composants réutilisables, DOM virtuel ultra-performant et écosystème mature.</td></tr>
+        <tr><td><strong>Material UI (MD3)</strong></td><td>Design System UI</td><td>Composants graphiques professionnels conformes aux normes Material Design 3 de Google.</td></tr>
+        <tr><td><strong>Python / FastAPI</strong></td><td>Framework Backend</td><td>Exécution asynchrone ultra-rapide, validation automatique Pydantic et génération Swagger OpenAPI.</td></tr>
+        <tr><td><strong>Microsoft SQL Server</strong></td><td>SGBD Relationnel</td><td>Standard en vigueur au sein de la DSI ONEE, robustesse transactionnelle et sécurité éprouvée.</td></tr>
+        <tr><td><strong>JWT / Bcrypt</strong></td><td>Sécurité & Auth</td><td>Authentification stateless adaptée aux API REST et chiffrement robuste des mots de passe.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>4.7 Sécurité réseau et authentification JWT</h2>
+    <p>La communication entre le client React et l'API FastAPI s'effectue exclusivement en HTTPS. Lors de la connexion, le backend délivre un jeton JWT signé numériquement contenant l'ID et le rôle de l'utilisateur. Chaque requête ultérieure transporte ce jeton dans l'en-tête HTTP <code>Authorization: Bearer &lt;token&gt;</code>, permettant un contrôle d'accès strict (RBAC) au niveau de chaque route API.</p>
+
+    <div class="conclusion-box">
+      <strong>4.8 Conclusion du chapitre</strong>
+      Ce chapitre a détaillé les choix architecturaux solides qui structurent l'application SALA. Les diagrammes d'architecture 3 tiers pour les modules Salles et Véhicules démontrent la clarté de la séparation des responsabilités. Le chapitre 5 présentera la conception complète de la base de données.
+    </div>
+""", "Chapitre 4 — Architecture Technique", "18"))
+
+# P28 (Arabic Pg 19): CHAPITRE 5 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 5 : Conception de la Base de Données</h1>
+    
+    <div class="intro-box">
+      <strong>5.1 Introduction du chapitre</strong>
+      La base de données constitue le socle de persistance de toute application d'entreprise. Ce chapitre présente la démarche de conception de la base de données relationnelle du projet SALA en suivant les niveaux d'abstraction de la méthode Merise : le Modèle Conceptuel de Données (MCD), le Modèle Logique de Données (MLD), le Modèle Physique de Données (MPD) et la description détaillée des 18 tables créées sous SQL Server.
+    </div>
+
+    <h2>5.2 Modèle Conceptuel de Données (MCD)</h2>
+    <p>Le MCD représente les entités du domaine métier indépendamment de toute contrainte technique :</p>
+    <ul>
+      <li><code>UTILISATEUR</code>, <code>ROLE</code>, <code>BATIMENT</code>, <code>SALLE</code>, <code>EQUIPEMENT</code>, <code>RESERVATION</code>, <code>PARTICIPANT</code> ;</li>
+      <li><code>VEHICULE</code>, <code>CHAUFFEUR</code>, <code>MISSION</code>, <code>CARBURANT</code>, <code>MAINTENANCE</code>, <code>ASSURANCE</code>, <code>VISITE_TECHNIQUE</code> ;</li>
+      <li><code>JOURNAL_AUDIT</code>, <code>NOTIFICATION</code>.</li>
+    </ul>
+
+    <h2>5.3 Modèle Logique de Données (MLD)</h2>
+    <p>Le MLD traduit le MCD en structures relationnelles avec clés primaires et clés étrangères :</p>
+    <div style="font-family:monospace; font-size:8.5pt; background:#f1f5f9; padding:3mm; border-radius:4px; line-height:1.6;">
+      UTILISATEUR (<u>id_user</u>, matricule, nom, prenom, email, mdp_hash, #id_role)<br/>
+      ROLE (<u>id_role</u>, libelle, description)<br/>
+      SALLE (<u>id_salle</u>, nom, capacite, etage, #id_batiment)<br/>
+      RESERVATION (<u>id_reservation</u>, date_reservation, heure_debut, heure_fin, statut, motif, #id_salle, #id_user)<br/>
+      VEHICULE (<u>id_vehicule</u>, immatriculation, marque, modele, annee, kilometrage, statut)<br/>
+      MISSION (<u>id_mission</u>, destination, date_depart, date_retour, statut, #id_vehicule, #id_chauffeur, #id_user)
+    </div>
+""", "Chapitre 5 — Base de Données", "19"))
+
+# P29 (Arabic Pg 20): CHAPITRE 5 (Part 2)
+pages.append(make_page("""
+    <h2>5.4 Modèle Physique de Données (MPD) et Schéma relationnel</h2>
+    <p>Le MPD précise pour chaque table les types de données SQL Server, les contraintes d'intégrité (NOT NULL, UNIQUE, CHECK) ainsi que la stratégie d'indexation pour optimiser les requêtes fréquentes :</p>
+
+    <p class="table-caption">Tableau 5.1 — Extrait du Modèle Physique de Données (MPD) et stratégie d'indexation SQL Server</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:20%;">Nom de la Table</th><th style="width:20%;">Clé Primaire</th><th style="width:25%;">Types SGBD principaux</th><th>Index recommandés & Justification</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>UTILISATEUR</strong></td><td><code>id_user (INT, IDENTITY)</code></td><td>NVARCHAR(100), VARCHAR(255)</td><td>Index UNIQUE sur <code>email</code> et <code>matricule</code> pour l'authentification rapide.</td></tr>
+        <tr><td><strong>SALLE</strong></td><td><code>id_salle (INT, IDENTITY)</code></td><td>NVARCHAR(100), INT</td><td>Index sur <code>id_batiment</code> et index sur <code>capacite</code> pour le filtrage rapide.</td></tr>
+        <tr><td><strong>RESERVATION</strong></td><td><code>id_res (INT, IDENTITY)</code></td><td>DATETIME2, NVARCHAR(50)</td><td>Index composite sur <code>(id_salle, date_deb, date_fin)</code> pour la détection de conflits.</td></tr>
+        <tr><td><strong>VEHICULE</strong></td><td><code>id_vehicule (INT, IDENTITY)</code></td><td>VARCHAR(50), INT</td><td>Index UNIQUE sur <code>immatriculation</code> et index sur <code>statut</code>.</td></tr>
+        <tr><td><strong>MISSION</strong></td><td><code>id_mission (INT, IDENTITY)</code></td><td>DATETIME2, NVARCHAR(50)</td><td>Index composite sur <code>(id_vehicule, date_dep, date_ret)</code> pour vérifier la disponibilité.</td></tr>
+        <tr><td><strong>JOURNAL_AUDIT</strong></td><td><code>id_log (BIGINT, IDENTITY)</code></td><td>DATETIME2, NVARCHAR(MAX)</td><td>Index sur <code>date_action</code> et <code>id_user</code> pour la traçabilité administrative.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>5.5 Schéma relationnel global</h2>
+    <p>La base de données rassemble 18 tables reliées par des contraintes de clé étrangère garantissant une intégrité référentielle stricte. Deux sous-graphes principaux émergent : la gestion des réservations de salles et la gestion de la flotte automobile, interconnectés par les tables transverses d'utilisateurs et de journaux d'audit.</p>
+""", "Chapitre 5 — Base de Données", "20"))
+
+# P30 (Arabic Pg 21): CHAPITRE 5 (Part 3)
+pages.append(make_page("""
+    <h2>5.6 Description détaillée des tables principales</h2>
+    
+    <h3>5.6.1 Table RESERVATION</h3>
+    <p>La table <code>RESERVATION</code> centralise les demandes de réservation de salles. Elle comporte une contrainte <code>CHECK (heure_fin > heure_debut)</code> et un statut parmi : <code>En attente</code>, <code>Confirmée</code>, <code>Refusée</code>, <code>Annulée</code>. Un index composite permet d'exécuter la recherche de créneaux chevauchants en moins de 10 millisecondes.</p>
+
+    <h3>5.6.2 Table MISSION</h3>
+    <p>La table <code>MISSION</code> enregistre les déplacements nécessitant un véhicule. Elle stocke la destination, la date de départ, la date de retour prévue, les kilométrages de départ et de retour réels, ainsi que les clés étrangères vers le véhicule et le chauffeur affectés.</p>
+
+    <h3>5.6.3 Table VEHICULE</h3>
+    <p>Centralise la fiche technique de chaque véhicule du parc de l'ONEE (immatriculation, marque, modèle, année, kilométrage compteur actuel, catégorie et état de disponibilité).</p>
+
+    <h3>5.6.4 Table JOURNAL_AUDIT</h3>
+    <p>Enregistre automatiquement l'historique de toutes les opérations sensibles réalisées sur le système (création de compte, modification de réservation, suppression de véhicule, tentative de connexion échouée) à des fins de sécurité et de conformité.</p>
+""", "Chapitre 5 — Base de Données", "21"))
+
+# P31 (Arabic Pg 22): CHAPITRE 5 (Part 4)
+pages.append(make_page("""
+    <h2>5.7 Contraintes d'intégrité et règles de persistance</h2>
+    <p>L'ensemble des relations entre les tables est protégé par des règles de suppression et de mise à jour adaptées aux exigences métiers :</p>
+    <ul>
+      <li><strong>Suppression en cascade (CASCADE) :</strong> Appliquée pour les tables de détail directement dépendantes d'un enregistrement parent (ex: la suppression d'une réservation supprime ses participants associés).</li>
+      <li><strong>Restriction (RESTRICT) :</strong> Appliquée sur les tables de référence critiques (ex: il est impossible de supprimer un véhicule ou une salle s'il existe des réservations ou des missions associées actives).</li>
+    </ul>
+
+    <div class="conclusion-box">
+      <strong>5.8 Conclusion du chapitre</strong>
+      Ce cinquième chapitre a formalisé la conception de la base de données relationnelle sous SQL Server. La rigueur apportée à la modélisation et à l'indexation garantit l'intégrité des données et la réactivité du système. Le chapitre 6 présente la phase de développement et de réalisation concrète des modules applicatifs.
+    </div>
+""", "Chapitre 5 — Base de Données", "22"))
+
+# P32 (Arabic Pg 23): CHAPITRE 6 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 6 : Réalisation et Développement des Modules</h1>
+    
+    <div class="intro-box">
+      <strong>6.1 Introduction du chapitre</strong>
+      Ce chapitre constitue le cœur opérationnel du rapport. Il retrace les étapes de réalisation concrète de la plateforme SALA, présente la structure du code source frontend et backend, et détaille les modules fonctionnels développés pendant le stage (assistant de réservation en 10 étapes, gestion du parc automobile, tableaux de bord et brique d'IA).
+    </div>
+
+    <h2>6.2 Pipeline de réalisation du projet</h2>
+    <p>Le développement de l'application a suivi une démarche chronologique structurée en 7 étapes méthodologiques :</p>
+
+    <p class="table-caption">Tableau 6.1 — Étapes du pipeline de réalisation suivi durant le stage</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:15%;">Étape</th><th style="width:30%;">Intitulé de l'étape</th><th>Description du travail réalisé</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Étape 1</strong></td><td>Analyse et compréhension</td><td>Immersion métier, interviews des utilisateurs et recensement des règles de gestion.</td></tr>
+        <tr><td><strong>Étape 2</strong></td><td>Architecture Backend Python</td><td>Conception de l'arborescence FastAPI, configuration des routes, services et middlewares.</td></tr>
+        <tr><td><strong>Étape 3</strong></td><td>Conception BDD SQL Server</td><td>Création des scripts SQL de création des tables, index et contraintes d'intégrité.</td></tr>
+        <tr><td><strong>Étape 4</strong></td><td>Compréhension des données</td><td>Étude des structures de données de l'ONEE et préparation des jeux de données de test.</td></tr>
+        <tr><td><strong>Étape 5</strong></td><td>Prototypage UX/UI Figma</td><td>Conception des maquettes interactives et formalisation des parcours utilisateurs.</td></tr>
+        <tr><td><strong>Étape 6</strong></td><td>Développement Frontend React</td><td>Implémentation des composants React, gestion des états locaux et intégration Axios.</td></tr>
+        <tr><td><strong>Étape 7</strong></td><td>Intégration & Tests</td><td>Raccordement Frontend-Backend, tests d'intégration et corrections d'anomalies.</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 6 — Réalisation Logicielle", "23"))
+
+# P33 (Arabic Pg 24): CHAPITRE 6 (Part 2)
+pages.append(make_page("""
+    <h2>6.3 Application Frontend React.js & Design System SALA</h2>
+    <p>Le frontend a été développé en React.js (version 18) en s'appuyant sur la bibliothèque Material UI réimplantant le Design System Material Design 3 de Google. Une attention particulière a été portée à la clarté visuelle et à la lisibilité des plannings.</p>
+    
+    <div style="background:#f1f5f9; border:1px dashed #003366; padding:3mm; border-radius:4px; text-align:center; margin:3mm 0;">
+      <strong style="color:var(--primary);">Aperçu de l'Interface Utilisateur (Application SALA)</strong><br/>
+      <span style="font-size:9pt; color:#475569;">Espace Employé : Tableau de Bord Général & Portail de Connexion Sécurisé JWT</span>
+    </div>
+    
+    <p>L'interface offre au collaborateur connecté une vue synthétique : nombre de réservations à venir, horaire et salle de sa prochaine réunion, nombre de salles instantanément libres et accès rapide au wizard de réservation.</p>
+""", "Chapitre 6 — Réalisation Logicielle", "24"))
+
+# P34 (Arabic Pg 25): CHAPITRE 6 (Part 3 - WIZARD)
+pages.append(make_page("""
+    <h2>6.4 Module Assistant de Réservation Intelligente (Wizard 10 étapes)</h2>
+    <p>Pour éviter les erreurs de saisie et réduire la charge cognitive des utilisateurs, le module de réservation de salle a été décomposé sous la forme d'un assistant guidé pas-à-pas (Wizard) en 10 étapes successives :</p>
+
+    <p class="table-caption">Tableau 6.2 — Parcours de réservation guidée en 10 étapes conçu sur Figma et développé sous React</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:12%;">N° Étape</th><th style="width:30%;">Nom de l'Étape</th><th>Description de l'action utilisateur et traitement système</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Étape 1</strong></td><td>Sélection de la date</td><td>Choix du jour via un calendrier interactif affichant les indicateurs de charge.</td></tr>
+        <tr><td><strong>Étape 2</strong></td><td>Créneau horaire</td><td>Définition des heures de début/fin avec calcul dynamique de la durée.</td></tr>
+        <tr><td><strong>Étape 3</strong></td><td>Nombre de participants</td><td>Saisie du nombre de personnes attendues avec pré-filtrage des salles adaptées.</td></tr>
+        <tr><td><strong>Étape 4</strong></td><td>Pause-café</td><td>Option de commande de collation transmise aux services généraux.</td></tr>
+        <tr><td><strong>Étape 5</strong></td><td>Déjeuner</td><td>Sélection du type de restauration (self-service ou service à table).</td></tr>
+        <tr><td><strong>Étape 6</strong></td><td>Gestion des invités</td><td>Saisie de la liste des participants internes (matricule) et externes (email).</td></tr>
+        <tr><td><strong>Étape 7</strong></td><td>Équipements requis</td><td>Cochage des matériels indispensables (projecteur, visio, paperboard).</td></tr>
+        <tr><td><strong>Étape 8</strong></td><td>Choix de la salle</td><td>Présentation de la liste des salles disponibles filtrées et suggestions IA.</td></tr>
+        <tr><td><strong>Étape 9</strong></td><td>Vérification sécurité</td><td>Rappel de l'identité connectée et vérification de la session utilisateur.</td></tr>
+        <tr><td><strong>Étape 10</strong></td><td>Résumé & Confirmation</td><td>Écran récapitulatif global et enregistrement définitif avec envoi de convocations.</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 6 — Réalisation Logicielle", "25"))
+
+# P35 (Arabic Pg 26): CHAPITRE 6 (Part 4 - PARC VEHICULES)
+pages.append(make_page("""
+    <h2>6.5 Module de Gestion du Parc Automobile</h2>
+    <p>Le module de gestion des véhicules centralise les informations relatives aux déplacements professionnels. Il s'articule autour des fonctionnalités suivantes :</p>
+    <ul>
+      <li><strong>Gestion de la flotte :</strong> Fiche complète par véhicule (immatriculation, marque, modèle, état, kilométrage).</li>
+      <li><strong>Gestion des chauffeurs :</strong> Suivi de la disponibilité des conducteurs et de la validité de leur permis.</li>
+      <li><strong>Gestion des missions :</strong> Planning des déplacements avec affectation d'un véhicule et d'un chauffeur sans chevauchement.</li>
+      <li><strong>Suivi du carburant :</strong> Enregistrement des bons de carburant et calcul de la consommation moyenne au 100km.</li>
+      <li><strong>Suivi de la maintenance et contrôles :</strong> Centralisation de l'historique des vidanges, réparations et alertes automatiques à l'approche de la visite technique.</li>
+    </ul>
+
+    <p class="table-caption">Tableau 6.3 — Extrait des principaux endpoints de l'API REST FastAPI du backend</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:20%;">Ressource</th><th style="width:40%;">Endpoint REST</th><th style="width:15%;">Méthode</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Authentification</td><td><code>/api/v1/auth/login</code></td><td>POST</td><td>Vérification des identifiants et délivrance du jeton JWT</td></tr>
+        <tr><td>Salles</td><td><code>/api/v1/salles/disponibilite</code></td><td>GET</td><td>Recherche des salles libres par créneau et équipements</td></tr>
+        <tr><td>Réservations</td><td><code>/api/v1/reservations</code></td><td>POST / GET</td><td>Création et consultation des réservations de salles</td></tr>
+        <tr><td>Véhicules</td><td><code>/api/v1/vehicules/disponibles</code></td><td>GET</td><td>Liste des véhicules libres pour une période de mission</td></tr>
+        <tr><td>Missions</td><td><code>/api/v1/missions/affecter</code></td><td>POST</td><td>Validation d'une mission et affectation d'un chauffeur</td></tr>
+        <tr><td>Intelligence Artificielle</td><td><code>/api/v1/ia/suggestion-salle</code></td><td>POST</td><td>Moteur de recommandation intelligente de salles</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 6 — Réalisation Logicielle", "26"))
+
+# P36 (Arabic Pg 27): CHAPITRE 6 (Part 5)
+pages.append(make_page("""
+    <h2>6.6 Module Tableau de Bord et Statistiques KPI</h2>
+    <p>Le module de tableau de bord agrège les données historisées dans la base pour offrir aux responsables une vision synthétique en temps réel : taux d'occupation des salles par bâtiment, taux de disponibilité des véhicules, coût moyen de carburant par mission et délai moyen de validation des demandes.</p>
+
+    <h2>6.7 Service d'Intelligence Artificielle et d'aide à la décision</h2>
+    <p>La brique d'IA intégrée au backend FastAPI apporte deux services majeurs :</p>
+    <ul>
+      <li><strong>Moteur de suggestion de salles :</strong> Calcule un score de pertinence pour chaque salle disponible en tenant compte du nombre exact de participants, de la proximité du bâtiment et des habitudes de l'organisateur.</li>
+      <li><strong>Détection proactive des conflits :</strong> Alerte l'utilisateur dès la saisie du créneau si une forte contenance est détectée sur la salle demandée.</li>
+    </ul>
+
+    <div class="conclusion-box">
+      <strong>6.8 Conclusion du chapitre</strong>
+      Ce chapitre a présenté les réalisations logicielles concrètes effectuées lors du stage. La plateforme SALA offre des interfaces modernes et des services backend performants couvrant l'ensemble du périmètre métier. Le chapitre 7 aborde la phase de tests, de validation et de déploiement.
+    </div>
+""", "Chapitre 6 — Réalisation Logicielle", "27"))
+
+# P37 (Arabic Pg 28): CHAPITRE 7 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 7 : Tests, Validation et Déploiement</h1>
+    
+    <div class="intro-box">
+      <strong>7.1 Introduction du chapitre</strong>
+      Pour garantir la fiabilité, la sécurité et la performance d'une application d'entreprise, une phase de tests rigoureuse est indispensable. Ce chapitre présente la stratégie de tests multi-niveaux mise en œuvre (tests unitaires, fonctionnels, d'intégration, de performance sous Locust) ainsi que la procédure de déploiement de la plateforme sur l'infrastructure de l'ONEE.
+    </div>
+
+    <h2>7.2 Stratégie générale de tests</h2>
+    <p>La stratégie adoptée s'appuie sur la pyramide des tests classique en génie logiciel : une large base de tests unitaires automatisés pour vérifier les fonctions métier indépendantes, complétée par des tests d'intégration API et des tests fonctionnels de bout en bout.</p>
+
+    <h2>7.3 Tests unitaires backend (Pytest)</h2>
+    <p class="table-caption">Tableau 7.1 — Synthèse des tests unitaires automatisés exécutés sur le backend FastAPI</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:30%;">Module Backend Testé</th><th style="width:25%;">Nombre de Tests</th><th style="width:25%;">Taux de Couverture</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Service de Réservation Salles</strong></td><td>24 tests</td><td>88%</td><td>Succès (100%)</td></tr>
+        <tr><td><strong>Service de Gestion des Missions</strong></td><td>19 tests</td><td>82%</td><td>Succès (100%)</td></tr>
+        <tr><td><strong>Authentification & Sécurité JWT</strong></td><td>15 tests</td><td>91%</td><td>Succès (100%)</td></tr>
+        <tr><td><strong>Service de Notifications SMTP</strong></td><td>10 tests</td><td>76%</td><td>Succès (100%)</td></tr>
+        <tr><td><strong>Moteur de Suggestion IA</strong></td><td>12 tests</td><td>80%</td><td>Succès (100%)</td></tr>
+      </tbody>
+    </table>
+""", "Chapitre 7 — Tests & Déploiement", "28"))
+
+# P38 (Arabic Pg 29): CHAPITRE 7 (Part 2)
+pages.append(make_page("""
+    <h2>7.4 Tests fonctionnels et d'intégration</h2>
+    <p>Les tests fonctionnels ont consisté à rejouer manuellement et de bout en bout l'ensemble des scénarios d'usage définis au chapitre 3. Les échanges entre le Frontend React et l'API FastAPI ont été validés, notamment la bonne gestion des erreurs HTTP (400, 401, 403, 409 Conflit) et la cohérence de l'affichage.</p>
+
+    <h2>7.5 Tests de charge et de performance (Locust)</h2>
+    <p>Des tests de montée en charge ont été menés à l'aide du framework Locust afin de simuler des accès simultanés de collaborateurs effectuant des recherches de disponibilité de salles et des demandes de véhicules :</p>
+
+    <p class="table-caption">Tableau 7.2 — Résultats des tests de charge sous Locust (Temps de réponse moyen API)</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Utilisateurs Simultanés</th><th style="width:30%;">Débit (Requêtes / sec)</th><th style="width:25%;">Temps de Réponse Moyen</th><th>Taux d'Erreur</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>10 utilisateurs</strong></td><td>45 req/s</td><td>85 ms</td><td>0.0 %</td></tr>
+        <tr><td><strong>25 utilisateurs</strong></td><td>110 req/s</td><td>140 ms</td><td>0.0 %</td></tr>
+        <tr><td><strong>50 utilisateurs</strong></td><td>220 req/s</td><td>270 ms</td><td>0.0 %</td></tr>
+        <tr><td><strong>100 utilisateurs</strong></td><td>410 req/s</td><td>410 ms</td><td>0.8 %</td></tr>
+      </tbody>
+    </table>
+    <p>Ces résultats confirment que l'architecture asynchrone FastAPI répond parfaitement aux exigences de charge interne de l'ONEE.</p>
+""", "Chapitre 7 — Tests & Déploiement", "29"))
+
+# P39 (Arabic Pg 30): CHAPITRE 7 (Part 3)
+pages.append(make_page("""
+    <h2>7.6 Procédure de déploiement et mise en production</h2>
+    <p>Le déploiement de la plateforme SALA sur l'environnement de recette de la DSI de l'ONEE a respecté la procédure standard :</p>
+    <ul>
+      <li><strong>Base de données :</strong> Exécution du script DDL de création des 18 tables, des contraintes et des index sous SQL Server.</li>
+      <li><strong>Backend FastAPI :</strong> Déploiement du code Python dans un environnement virtuel isolé, configuration des variables d'environnement (chaîne BDD, secret JWT) et exécution derrière le serveur ASGI Uvicorn géré par un service Nginx reverse proxy.</li>
+      <li><strong>Frontend React :</strong> Génération du build de production optimisé (<code>npm run build</code>) et hébergement des fichiers statiques minifiés par le serveur web.</li>
+    </ul>
+
+    <div class="conclusion-box">
+      <strong>7.7 Conclusion du chapitre</strong>
+      Les campagnes de tests poussées et la procédure de déploiement maîtrisée ont permis de valider la conformité opérationnelle et la robustesse technique de la plateforme SALA. Le chapitre 8 présente la dimension IA et les perspectives d'évolution du système.
+    </div>
+""", "Chapitre 7 — Tests & Déploiement", "30"))
+
+# P40 (Arabic Pg 31): CHAPITRE 8 (Part 1)
+pages.append(make_page("""
+    <h1 class="chapter-title">Chapitre 8 : Intelligence Artificielle et Perspectives d'Évolution</h1>
+    
+    <div class="intro-box">
+      <strong>8.1 Introduction du chapitre</strong>
+      Étant issu de la filière <strong>Intelligence Artificielle & Data</strong> de l'EMSI Casablanca, l'intégration d'une dimension d'aide à la décision fondée sur la donnée constituait un enjeu majeur de ce stage. Ce dernier chapitre présente le fonctionnement des modules d'IA intégrés à la plateforme SALA, détaille les indicateurs KPI intelligents et ouvre des perspectives d'évolution futures (Machine Learning supervisé, IoT et Business Intelligence).
+    </div>
+
+    <h2>8.2 Rôle de l'Intelligence Artificielle dans la plateforme</h2>
+    <p>L'intégration de l'IA au sein de SALA dépasse la simple numérisation pour apporter une réelle valeur ajoutée décisionnelle :</p>
+    <ul>
+      <li><strong>Moteur de suggestion automatique de salles :</strong> Lorsqu'un collaborateur exprime un besoin (nombre de personnes, créneau, équipements), l'IA filtre d'abord les salles compatibles puis calcule un score de pertinence Si pour chaque salle :
+        Score = w1 * Capacité + w2 * Proximité + w3 * (1 - Charge)
+        Ce score permet de proposer en priorité les salles évitant le gaspillage d'espace et favorisant une répartition équilibrée de l'occupation entre les bâtiments.</li>
+      <li><strong>Détection proactive des risques de conflit :</strong> Le système analyse l'historique et la tendance d'occupation pour alerter l'utilisateur en temps réel sur la probabilité de saturation d'un créneau.</li>
+    </ul>
+""", "Chapitre 8 — IA & Perspectives", "31"))
+
+# P41 (Arabic Pg 32): CHAPITRE 8 (Part 2)
+pages.append(make_page("""
+    <h2>8.3 Tableaux de bord intelligents et indicateurs KPI</h2>
+    <p>La plateforme intègre un ensemble d'indicateurs clés de performance (KPI) exploités par les décideurs :</p>
+
+    <p class="table-caption">Tableau 8.1 — Principaux indicateurs de performance KPI intégrés au tableau de bord décisionnel</p>
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:25%;">Indicateur KPI</th><th style="width:35%;">Méthode de calcul / Formule</th><th>Utilité décisionnelle pour l'ONEE</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Taux d'occupation des salles</strong></td><td>(Heures réservées / Heures ouvrables totales) × 100</td><td>Identifier les salles sous-utilisées ou sur-sollicitées par bâtiment.</td></tr>
+        <tr><td><strong>Taux de disponibilité du parc</strong></td><td>(Véhicules libres / Flotte totale) × 100</td><td>Anticiper les besoins d'acquisition ou de redéploiement de véhicules.</td></tr>
+        <tr><td><strong>Coût kilométrique moyen</strong></td><td>Total dépenses carburant / Kilomètres parcourus</td><td>Détecter les véhicules énergivores nécessitant une révision.</td></tr>
+        <tr><td><strong>Délai moyen de validation</strong></td><td>Moyenne (Date validation − Date demande)</td><td>Mesurer la réactivité des gestionnaires de parc et de salles.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>8.4 Perspectives d'évolution futures</h2>
+    <ul>
+      <li><strong>Machine Learning prédictif :</strong> Entraîner des modèles de séries temporelles (Prophet/LSTM) pour prédire les pics de demande de salles et de véhicules.</li>
+      <li><strong>Maintenance prédictive IoT :</strong> Connecter des boîtiers GPS/OBD2 sur les véhicules pour remonter en temps réel les données du moteur et anticiper les pannes.</li>
+      <li><strong>Business Intelligence (Power BI) :</strong> Alimenter un Data Warehouse consolidé pour des analyses stratégiques à l'échelle nationale.</li>
+    </ul>
+
+    <div class="conclusion-box">
+      <strong>8.5 Conclusion du chapitre</strong>
+      Ce dernier chapitre a mis en valeur l'apport des techniques d'IA et d'analyse de données dans la plateforme SALA. Ces fonctionnalités transforment un outil de gestion classique en un véritable système d'aide à la décision au service de l'ONEE.
+    </div>
+""", "Chapitre 8 — IA & Perspectives", "32"))
+
+# P42 (Arabic Pg 33): CONCLUSION GÉNÉRALE
+pages.append(make_page("""
+    <h1 class="chapter-title">Conclusion Générale</h1>
+    
+    <h2>Bilan général du projet</h2>
+    <p>Ce stage de fin d'année de 4<sup>ème</sup> année d'ingénieur, effectué au sein de la Direction des Systèmes d'Information de l'ONEE durant deux mois, a constitué une expérience professionnelle et technique particulièrement riche et stimulante. Il a permis de mener à bien la conception, le développement et le déploiement de la plateforme web intelligente SALA, répondant à un besoin concret de centralisation de la gestion des ressources partagées (salles de réunion et parc automobile).</p>
+    <p>La démarche méthodologique rigoureuse suivie — depuis l'analyse de l'existant jusqu'aux tests de charge en passant par la modélisation UML et la conception BDD — a permis d'aboutir à une solution robuste, sécurisée et parfaitement évolutive.</p>
+
+    <h2>Compétences acquises</h2>
+    <ul>
+      <li><strong>Sur le plan technique :</strong> Approfondissement poussé des frameworks modernes React.js (Material Design 3) et FastAPI (Python), maîtrise de la modélisation sous SQL Server et mise en œuvre d'une architecture 3 tiers sécurisée par JWT.</li>
+      <li><strong>Sur le plan méthodologique :</strong> Conduite d'un projet d'ingénierie logicielle complet, rédaction de spécifications strictes et mise en place d'une démarche de tests multi-niveaux.</li>
+      <li><strong>Sur le plan humain et professionnel :</strong> Intégration au sein des équipes de la DSI ONEE, travail en équipe, communication professionnelle avec les décideurs métiers et gestion du temps.</li>
+    </ul>
+
+    <h2>Mot de fin</h2>
+    <p>En définitive, ce stage a permis de conjuguer rigueur académique de l'EMSI et exigence professionnelle au service d'un projet à forte utilité concrète pour l'ONEE. L'expérience acquise constitue un socle solide pour aborder la 5<sup>ème</sup> et dernière année du cycle d'ingénieur.</p>
+""", "Conclusion Générale", "33"))
+
+# P43 (Arabic Pg 34): BIBLIOGRAPHIE
+pages.append(make_page("""
+    <h1 class="chapter-title">Bibliographie et Webographie</h1>
+    
+    <h2>Ouvrages et publications de référence</h2>
+    <ol style="margin-left:5mm; line-height:1.6; font-size:9.5pt;">
+      <li style="margin-bottom:2.5mm;"><strong>Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994).</strong> <em>Design Patterns: Elements of Reusable Object-Oriented Software</em>. Addison-Wesley.</li>
+      <li style="margin-bottom:2.5mm;"><strong>Fowler, M. (2018).</strong> <em>Refactoring: Improving the Design of Existing Code</em> (2nd ed.). Addison-Wesley.</li>
+      <li style="margin-bottom:2.5mm;"><strong>Elmasri, R., & Navathe, S. B. (2015).</strong> <em>Fundamentals of Database Systems</em> (7th ed.). Pearson.</li>
+      <li style="margin-bottom:2.5mm;"><strong>Russell, S., & Norvig, P. (2020).</strong> <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson.</li>
+      <li style="margin-bottom:2.5mm;"><strong>Booch, G., Rumbaugh, J., & Jacobson, I. (2005).</strong> <em>The Unified Modeling Language User Guide</em> (2nd ed.). Addison-Wesley.</li>
+    </ol>
+
+    <h2 style="margin-top:4mm;">Documentation technique et normes web</h2>
+    <ol start="6" style="margin-left:5mm; line-height:1.6; font-size:9.5pt;">
+      <li style="margin-bottom:2.5mm;"><strong>FastAPI Official Documentation (2026).</strong> <em>FastAPI Framework for Python</em>. Consulté sur https://fastapi.tiangolo.com</li>
+      <li style="margin-bottom:2.5mm;"><strong>React.js Documentation (2026).</strong> <em>React — A JavaScript library for building user interfaces</em>. Consulté sur https://react.dev</li>
+      <li style="margin-bottom:2.5mm;"><strong>Microsoft Learn (2026).</strong> <em>Microsoft SQL Server Documentation and T-SQL Reference</em>. Consulté sur https://learn.microsoft.com/sql</li>
+      <li style="margin-bottom:2.5mm;"><strong>Google Material Design 3 (2026).</strong> <em>Material 3 Guidelines for Web & Mobile UI</em>. Consulté sur https://m3.material.io</li>
+      <li style="margin-bottom:2.5mm;"><strong>IETF RFC 7519 (2015).</strong> <em>JSON Web Token (JWT) Specification</em>. Internet Engineering Task Force.</li>
+    </ol>
+""", "Bibliographie & Webographie", "34"))
+
+# P44 (Arabic Pg 35): ANNEXES
+pages.append(make_page("""
+    <h1 class="chapter-title">Annexes</h1>
+    
+    <h2>Annexe A — Scripts SQL DDL de création des tables</h2>
+    <p>Cette annexe regroupe les scripts T-SQL de création des 18 tables de la base de données sous SQL Server, avec la déclaration des clés primaires, clés étrangères et index composites d'optimisation.</p>
+
+    <h2>Annexe B — Documentation Swagger / OpenAPI des API REST</h2>
+    <p>Contient l'inventaire exhaustif des endpoints de l'API backend FastAPI, avec la spécification des schémas JSON Pydantic pour les requêtes et les réponses HTTP.</p>
+
+    <h2>Annexe C — Captures d'écran complémentaires de la plateforme SALA</h2>
+    <p>Présente l'ensemble des écrans secondaires de l'application : formulaires de saisie du carburant, fiches de maintenance préventive des véhicules, et modals de confirmation.</p>
+
+    <h2>Annexe D — Guide d'installation et d'administration système</h2>
+    <p>Propose la procédure pas-à-pas pour l'installation des dépendances (React, Python FastAPI, Uvicorn, Nginx) et la configuration du service de déploiement continu.</p>
+""", "Annexes", "35"))
+
+print(f"Total pages generated: {len(pages)}")
+
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write(html_head + "\\n".join(pages) + "\\n</body>\\n</html>")
+
+print(f"Successfully generated {html_path} with {len(pages)} pages!")
+'''
+
+with open(script_path, "w", encoding="utf-8") as f:
+    f.write(code)
+
+print("create_full_report.py updated successfully.")

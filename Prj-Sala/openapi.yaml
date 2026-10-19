@@ -1,0 +1,1163 @@
+openapi: 3.0.3
+info:
+  title: SALA Réunion API — Gestion des Salles de Réunion (ONEE)
+  description: |
+    API RESTful de gestion et de réservation des salles de réunion pour l'Office National de l'Électricité et de l'Eau Potable (ONEE).
+    
+    ### Fonctionnalités principales :
+    - **Authentification & Sécurité** : Connexion via JWT (JSON Web Token), gestion des rôles (Collaborateur, Administrateur).
+    - **Gestion des Salles & Bâtiments** : Catalogue des salles, capacités, équipements installés, filtres de disponibilité.
+    - **Réservations de Salles** : Réservation en temps réel, vérification des conflits d'horaires, gestion des services pauses-café et déjeuners.
+    - **Gestion des Participants** : Invitation de collaborateurs internes (matricule/service) et visiteurs externes (société/fonction).
+    - **Liste d'Attente & Workflow** : Demandes sans salle affectée, validation et affectation automatique ou administrative.
+    - **Statistiques & Reporting** : Taux d'occupation des salles, suivi du matériel et rapports d'activité.
+  version: 1.0.0
+  contact:
+    name: Équipe Support Informatique ONEE
+    email: support.it@onee.ma
+servers:
+  - url: https://api-sala.onee.ma/v1
+    description: Serveur de Production
+  - url: http://localhost:8080/api/v1
+    description: Serveur de Développement Local
+
+paths:
+  # ==========================================
+  # AUTHENTIFICATION
+  # ==========================================
+  /auth/login:
+    post:
+      tags:
+        - Authentification
+      summary: Authentification utilisateur
+      description: Permet à un collaborateur ou un administrateur de se connecter et de recevoir un jeton d'accès JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Identifiants invalides (email/matricule ou mot de passe incorrect)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentification
+      summary: Inscription d'un nouveau collaborateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Compte créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+        '400':
+          description: Données invalides ou matricule/email déjà existant
+
+  /auth/me:
+    get:
+      tags:
+        - Authentification
+      summary: Obtenir le profil de l'utilisateur connecté
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Informations du profil connecté
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilisateur'
+        '401':
+          description: Non autorisé (Jeton invalide ou expiré)
+
+  # ==========================================
+  # ENTITÉS (DIRECTIONS & DÉPARTEMENTS)
+  # ==========================================
+  /entites:
+    get:
+      tags:
+        - Entités
+      summary: Liste des entités organisationnelles
+      description: Récupère la liste des directions et départements de l'office.
+      responses:
+        '200':
+          description: Liste des entités
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entite'
+
+    post:
+      tags:
+        - Entités
+      summary: Créer une nouvelle entité (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntiteInput'
+      responses:
+        '201':
+          description: Entité créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entite'
+
+  # ==========================================
+  # BÂTIMENTS
+  # ==========================================
+  /batiments:
+    get:
+      tags:
+        - Bâtiments
+      summary: Liste des bâtiments
+      responses:
+        '200':
+          description: Liste des bâtiments disponibles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Batiment'
+
+    post:
+      tags:
+        - Bâtiments
+      summary: Ajouter un bâtiment (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatimentInput'
+      responses:
+        '201':
+          description: Bâtiment créé
+
+  # ==========================================
+  # SALLES DE RÉUNION
+  # ==========================================
+  /salles:
+    get:
+      tags:
+        - Salles
+      summary: Recherche et liste des salles de réunion
+      parameters:
+        - name: id_batiment
+          in: query
+          description: Filtrer par identifiant de bâtiment
+          schema:
+            type: integer
+        - name: capacite_min
+          in: query
+          description: Capacité minimale d'accueil
+          schema:
+            type: integer
+        - name: disponible
+          in: query
+          description: Filtrer selon la disponibilité générale
+          schema:
+            type: boolean
+        - name: date
+          in: query
+          description: Date spécifique de réservation souhaitée (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des salles correspondant aux critères
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Salle'
+
+    post:
+      tags:
+        - Salles
+      summary: Ajouter une nouvelle salle (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalleInput'
+      responses:
+        '201':
+          description: Salle ajoutée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salle'
+
+  /salles/{id}:
+    get:
+      tags:
+        - Salles
+      summary: Obtenir les détails d'une salle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de la salle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salle'
+        '404':
+          description: Salle introuvable
+
+    put:
+      tags:
+        - Salles
+      summary: Modifier une salle (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalleInput'
+      responses:
+        '200':
+          description: Salle mise à jour
+
+    delete:
+      tags:
+        - Salles
+      summary: Supprimer ou désactiver une salle (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Salle supprimée avec succès
+
+  /salles/{id}/disponibilites:
+    get:
+      tags:
+        - Salles
+      summary: Consulter le planning d'occupation d'une salle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: true
+          description: Date à vérifier (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Planning de la journée et créneaux déjà réservés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SallePlanning'
+
+  # ==========================================
+  # ÉQUIPEMENTS
+  # ==========================================
+  /equipements:
+    get:
+      tags:
+        - Équipements
+      summary: Catalogue des équipements disponibles
+      responses:
+        '200':
+          description: Liste des équipements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Equipement'
+
+    post:
+      tags:
+        - Équipements
+      summary: Ajouter un nouvel équipement au catalogue (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipementInput'
+      responses:
+        '201':
+          description: Équipement ajouté
+
+  # ==========================================
+  # RÉSERVATIONS
+  # ==========================================
+  /reservations:
+    get:
+      tags:
+        - Réservations
+      summary: Lister les réservations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: date_reunion
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: id_salle
+          in: query
+          schema:
+            type: integer
+        - name: id_utilisateur
+          in: query
+          schema:
+            type: integer
+        - name: statut
+          in: query
+          schema:
+            type: string
+            enum: [confirmed, pending, cancelled]
+      responses:
+        '200':
+          description: Liste des réservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+
+    post:
+      tags:
+        - Réservations
+      summary: Créer une nouvelle réservation de salle
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInput'
+      responses:
+        '201':
+          description: Réservation effectuée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '409':
+          description: Conflit d'horaire — la salle est déjà réservée sur ce créneau
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations/{id}:
+    get:
+      tags:
+        - Réservations
+      summary: Obtenir les détails complets d'une réservation (avec participants et prestations)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de la réservation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDetail'
+
+    put:
+      tags:
+        - Réservations
+      summary: Modifier une réservation existante
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInput'
+      responses:
+        '200':
+          description: Réservation mise à jour
+
+  /reservations/{id}/annuler:
+    patch:
+      tags:
+        - Réservations
+      summary: Annuler une réservation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Réservation annulée avec succès
+
+  /reservations/{id}/participants:
+    post:
+      tags:
+        - Participants
+      summary: Ajouter des participants à une réservation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ParticipantInput'
+      responses:
+        '201':
+          description: Participants ajoutés
+
+  # ==========================================
+  # LISTE D'ATTENTE
+  # ==========================================
+  /attentes:
+    get:
+      tags:
+        - Liste d'Attente
+      summary: Lister les demandes en liste d'attente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: statut
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+      responses:
+        '200':
+          description: Liste des demandes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListeAttente'
+
+    post:
+      tags:
+        - Liste d'Attente
+      summary: Soumettre une demande de réservation en liste d'attente (sans salle spécifique)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListeAttenteInput'
+      responses:
+        '201':
+          description: Demande enregistrée en liste d'attente
+
+  /attentes/{id}/affecter:
+    post:
+      tags:
+        - Liste d'Attente
+      summary: Affecter une salle disponible à une demande en liste d'attente (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id_salle
+              properties:
+                id_salle:
+                  type: integer
+                  example: 2
+      responses:
+        '200':
+          description: Demande convertie en réservation confirmée et affectée à la salle
+
+  # ==========================================
+  # STATISTIQUES ET DASHBOARD
+  # ==========================================
+  /statistiques/dashboard:
+    get:
+      tags:
+        - Statistiques
+      summary: Obtenir les indicateurs clés et statistiques d'occupation (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Métriques du tableau de bord
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Saisir le jeton JWT d'authentification (ex: `Bearer eyJhbGci...`)
+
+  schemas:
+    # ------------------ AUTH ------------------
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - mot_de_passe
+      properties:
+        email:
+          type: string
+          format: email
+          example: hassan.elamrani@onee.ma
+        mot_de_passe:
+          type: string
+          format: password
+          example: P@ssword2026
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 86400
+        user:
+          $ref: '#/components/schemas/Utilisateur'
+
+    RegisterRequest:
+      type: object
+      required:
+        - matricule
+        - prenom
+        - nom
+        - email
+        - mot_de_passe
+        - id_entite
+      properties:
+        matricule:
+          type: string
+          example: EMP-9042
+        prenom:
+          type: string
+          example: Karim
+        nom:
+          type: string
+          example: Benani
+        email:
+          type: string
+          format: email
+          example: karim.benani@onee.ma
+        mot_de_passe:
+          type: string
+          example: SecurePass123!
+        id_entite:
+          type: integer
+          example: 1
+
+    # ------------------ UTILISATEUR ------------------
+    Utilisateur:
+      type: object
+      properties:
+        id_utilisateur:
+          type: integer
+          example: 1
+        matricule:
+          type: string
+          example: EMP-1001
+        prenom:
+          type: string
+          example: Hassan
+        nom:
+          type: string
+          example: El Amrani
+        email:
+          type: string
+          example: hassan.elamrani@onee.ma
+        role:
+          type: string
+          enum: [user, admin]
+          example: admin
+        id_entite:
+          type: integer
+          example: 1
+        nom_entite:
+          type: string
+          example: Direction Générale
+        actif:
+          type: boolean
+          example: true
+        date_creation:
+          type: string
+          format: date-time
+
+    # ------------------ ENTITE ------------------
+    Entite:
+      type: object
+      properties:
+        id_entite:
+          type: integer
+          example: 1
+        nom_entite:
+          type: string
+          example: Direction de la Stratégie & Réseau
+        description:
+          type: string
+          example: Gestion de la stratégie globale et de l'infrastructure réseau.
+        active:
+          type: boolean
+          example: true
+
+    EntiteInput:
+      type: object
+      required:
+        - nom_entite
+      properties:
+        nom_entite:
+          type: string
+        description:
+          type: string
+
+    # ------------------ BATIMENT ------------------
+    Batiment:
+      type: object
+      properties:
+        id_batiment:
+          type: integer
+          example: 1
+        nom_batiment:
+          type: string
+          example: Siège Central A
+        adresse:
+          type: string
+          example: Avenue Al Maghrib Al Arabi, Rabat
+        actif:
+          type: boolean
+          example: true
+
+    BatimentInput:
+      type: object
+      required:
+        - nom_batiment
+      properties:
+        nom_batiment:
+          type: string
+        adresse:
+          type: string
+
+    # ------------------ SALLE ------------------
+    Salle:
+      type: object
+      properties:
+        id_salle:
+          type: integer
+          example: 1
+        nom_salle:
+          type: string
+          example: Salle Atlas
+        etage:
+          type: string
+          example: 1er Étage
+        id_batiment:
+          type: integer
+          example: 1
+        nom_batiment:
+          type: string
+          example: Siège Central A
+        capacite:
+          type: integer
+          example: 20
+        surface:
+          type: string
+          example: 45 m²
+        description:
+          type: string
+          example: Salle modulaire idéale pour conseils et réunions stratégiques.
+        image_url:
+          type: string
+          example: /images/salle-atlas.jpg
+        couleur_accent:
+          type: string
+          example: "#078d91"
+        disponible:
+          type: boolean
+          example: true
+        equipements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Equipement'
+
+    SalleInput:
+      type: object
+      required:
+        - nom_salle
+        - etage
+        - id_batiment
+        - capacite
+      properties:
+        nom_salle:
+          type: string
+        etage:
+          type: string
+        id_batiment:
+          type: integer
+        capacite:
+          type: integer
+        surface:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+        couleur_accent:
+          type: string
+        equipements_ids:
+          type: array
+          items:
+            type: integer
+
+    SallePlanning:
+      type: object
+      properties:
+        id_salle:
+          type: integer
+        nom_salle:
+          type: string
+        date:
+          type: string
+          format: date
+        creneaux_occupes:
+          type: array
+          items:
+            type: object
+            properties:
+              heure_debut:
+                type: string
+                example: "09:00"
+              heure_fin:
+                type: string
+                example: "11:00"
+              objet:
+                type: string
+                example: Réunion de Direction
+
+    # ------------------ EQUIPEMENT ------------------
+    Equipement:
+      type: object
+      properties:
+        id_equipement:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: projector
+        libelle:
+          type: string
+          example: Vidéoprojecteur 4K
+        type_equipement:
+          type: string
+          example: Affichage
+        icone:
+          type: string
+          example: 📹
+        nom_modele:
+          type: string
+          example: Epson EB-L630U
+        quantite_totale:
+          type: integer
+          example: 10
+        operationnel:
+          type: boolean
+          example: true
+
+    EquipementInput:
+      type: object
+      required:
+        - code
+        - libelle
+      properties:
+        code:
+          type: string
+        libelle:
+          type: string
+        type_equipement:
+          type: string
+        icone:
+          type: string
+        nom_modele:
+          type: string
+        quantite_totale:
+          type: integer
+
+    # ------------------ RESERVATION ------------------
+    Reservation:
+      type: object
+      properties:
+        id_reservation:
+          type: integer
+          example: 101
+        id_salle:
+          type: integer
+          example: 1
+        nom_salle:
+          type: string
+          example: Salle Atlas
+        id_utilisateur:
+          type: integer
+          example: 1
+        nom_organisateur:
+          type: string
+          example: Hassan El Amrani
+        date_reunion:
+          type: string
+          format: date
+          example: "2026-09-10"
+        heure_debut:
+          type: string
+          example: "09:00"
+        heure_fin:
+          type: string
+          example: "11:30"
+        objet:
+          type: string
+          example: Comité de Pilotage Projets Réseau
+        nb_participants:
+          type: integer
+          example: 12
+        pause_cafe:
+          type: boolean
+          example: true
+        details_cafe:
+          type: string
+          example: Café, thé, viennoiseries pour 12 personnes
+        dejeuner:
+          type: boolean
+          example: false
+        type_dejeuner:
+          type: string
+          nullable: true
+          example: null
+        statut:
+          type: string
+          enum: [confirmed, pending, cancelled]
+          example: confirmed
+
+    ReservationInput:
+      type: object
+      required:
+        - id_salle
+        - date_reunion
+        - heure_debut
+        - heure_fin
+        - objet
+        - nb_participants
+      properties:
+        id_salle:
+          type: integer
+          example: 1
+        date_reunion:
+          type: string
+          format: date
+          example: "2026-09-10"
+        heure_debut:
+          type: string
+          example: "09:00"
+        heure_fin:
+          type: string
+          example: "11:30"
+        objet:
+          type: string
+          example: Réunion de coordination
+        nb_participants:
+          type: integer
+          example: 8
+        pause_cafe:
+          type: boolean
+          example: true
+        details_cafe:
+          type: string
+          example: Jus et pause café simple
+        dejeuner:
+          type: boolean
+          example: false
+        type_dejeuner:
+          type: string
+          enum: [Self Service, Service à table]
+        equipements_ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 3]
+
+    ReservationDetail:
+      allOf:
+        - $ref: '#/components/schemas/Reservation'
+        - type: object
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/Participant'
+            equipements_commandes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Equipement'
+
+    # ------------------ PARTICIPANT ------------------
+    Participant:
+      type: object
+      properties:
+        id_participant:
+          type: integer
+          example: 1
+        id_reservation:
+          type: integer
+          example: 101
+        type_participant:
+          type: string
+          enum: [employe, visiteur]
+          example: employe
+        prenom:
+          type: string
+          example: Youssef
+        nom:
+          type: string
+          example: Mansouri
+        matricule:
+          type: string
+          nullable: true
+          example: EMP-3049
+        service:
+          type: string
+          nullable: true
+          example: DSI / Infrastructure
+        fonction:
+          type: string
+          nullable: true
+          example: Consultant Externe
+        societe:
+          type: string
+          nullable: true
+          example: Global Tech Partner
+
+    ParticipantInput:
+      type: object
+      required:
+        - type_participant
+        - prenom
+        - nom
+      properties:
+        type_participant:
+          type: string
+          enum: [employe, visiteur]
+        prenom:
+          type: string
+        nom:
+          type: string
+        matricule:
+          type: string
+        service:
+          type: string
+        fonction:
+          type: string
+        societe:
+          type: string
+
+    # ------------------ LISTE D'ATTENTE ------------------
+    ListeAttente:
+      type: object
+      properties:
+        id_attente:
+          type: integer
+          example: 5
+        id_utilisateur:
+          type: integer
+          example: 2
+        date_souhaitee:
+          type: string
+          format: date
+          example: "2026-09-12"
+        heure_debut:
+          type: string
+          example: "14:00"
+        heure_fin:
+          type: string
+          example: "16:00"
+        nb_participants:
+          type: integer
+          example: 35
+        objet:
+          type: string
+          example: Séminaire d'intégration
+        pause_cafe:
+          type: boolean
+          example: true
+        statut:
+          type: string
+          enum: [pending, approved, rejected]
+          example: pending
+        id_reservation:
+          type: integer
+          nullable: true
+          example: null
+
+    ListeAttenteInput:
+      type: object
+      required:
+        - date_souhaitee
+        - heure_debut
+        - heure_fin
+        - nb_participants
+        - objet
+      properties:
+        date_souhaitee:
+          type: string
+          format: date
+        heure_debut:
+          type: string
+        heure_fin:
+          type: string
+        nb_participants:
+          type: integer
+        objet:
+          type: string
+        pause_cafe:
+          type: boolean
+
+    # ------------------ DASHBOARD / STATS ------------------
+    DashboardStats:
+      type: object
+      properties:
+        total_salles:
+          type: integer
+          example: 8
+        total_reservations_mois:
+          type: integer
+          example: 142
+        taux_occupation_moyen:
+          type: number
+          format: float
+          example: 78.4
+        demandes_en_attente:
+          type: integer
+          example: 3
+        salles_les_plus_reservees:
+          type: array
+          items:
+            type: object
+            properties:
+              nom_salle:
+                type: string
+                example: Salle Atlas
+              nb_reservations:
+                type: integer
+                example: 48
+
+    # ------------------ ERREUR ------------------
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: CONFLICT_HORAIRE
+        message:
+          type: string
+          example: La salle est déjà réservée pour le créneau sélectionné.
+        timestamp:
+          type: string
+          format: date-time
